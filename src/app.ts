@@ -1,5 +1,7 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+
+import userRoutes from "./routes/user.route";
 
 const app = express();
 
@@ -7,9 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Test Route
-app.get("/", (req, res) => {
-  res.send("POS API IS RUNNING");
-})
+app.use("/api/users", userRoutes);
 
 export default app;
