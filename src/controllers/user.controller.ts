@@ -1,9 +1,17 @@
 import { Request, Response } from "express";
 import * as userService from "../services/user.service";
+import { moveFile } from "../utils/file";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const user = await userService.createUser(req.body);
+
+    if(req.file){
+      const avatarPath = moveFile(req.file, "avatars");
+
+      user.avatar = avatarPath;
+      await user.save();
+    }
 
     user.password = undefined as any;
 
