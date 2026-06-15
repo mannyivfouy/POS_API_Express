@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { stat } from "node:fs";
 
 export interface IUser extends Document {
   username: string;
