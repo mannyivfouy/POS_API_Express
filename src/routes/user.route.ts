@@ -11,7 +11,7 @@ const uploadtemp = createUploader("temp");
 router.post(
   "/create",
   authMiddleware,
-  authorize("admin"),
+  authorize("Admin"),
   uploadtemp.single("avatar"),
   userController.createUser,
 );
@@ -19,21 +19,21 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  authorize("admin", "manager"),
+  authorize("Admin", "Manager"),
   userController.getUsers,
 );
 
 router.get(
   "/:id",
   authMiddleware,
-  authorize("admin", "manager"),
+  authorize("Admin", "Manager"),
   userController.getUserById,
 );
 
 router.put(
   "/update/:id",
   authMiddleware,
-  authorize("admin"),
+  authorize("Admin"),
   uploadtemp.single("avatar"),
   userController.updateUser,
 );
@@ -41,7 +41,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("admin"),
+  authorize("Admin"),
   userController.deleteUser,
 );
 
