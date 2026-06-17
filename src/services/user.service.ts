@@ -1,5 +1,6 @@
 import User from "../models/User";
 import { hashPassword } from "../utils/bcrypt";
+import { deleteFile, moveFile } from "../utils/file";
 
 export const createUser = async (data: any) => {
   const existingUser = await User.findOne({ username: data.username });
@@ -32,28 +33,43 @@ export const getUserById = async (id: string) => {
   return user;
 };
 
-export const updateUser = async (id: string, data: any) => {
-  if (data.password) {
-    data.password = await hashPassword(data.password);
+export const updateUser = async (
+  id: string,
+  data: any,
+  file?: Express.Multer.File,
+) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new Error("User Not Found");
   }
 
-  const user = await User.findByIdAndUpdate(id, data, {
+  if (file) {
+    if (user.avatar) {
+      deleteFile(user.avatar);
+    }
+    data.avatar = moveFile(file, "avatars");
+  }
+
+  const updateUser = await User.findByIdAndUpdate(id, data, {
     new: true,
   }).select("-password");
 
-  if (!user) {
-    throw new Error("User Not Found");
-  }
-
-  return user;
+  return updateUser;
 };
 
 export const deleteUser = async (id: string) => {
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findById(id);
 
   if (!user) {
     throw new Error("User Not Found");
   }
+
+  if (user.avatar) {
+    deleteFile(user.avatar);
+  }
+
+  await User.findByIdAndDelete(id);
 
   return { message: "User Deleted Successfully" };
 };
