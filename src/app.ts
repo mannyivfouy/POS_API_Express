@@ -5,6 +5,7 @@ import path from "path";
 import authRoute from "./routes/auth.route";
 import userRoute from "./routes/user.route";
 import roleRoute from "./routes/role.route";
+import categoryRoute from "./routes/category.route";
 
 const app = express();
 
@@ -21,5 +22,8 @@ app.use("/api/users", userRoute);
 
 // Role Route
 app.use("/api/roles", roleRoute);
+
+// Category Route
+app.use("/api/categories", categoryRoute);
 
 export default app;
