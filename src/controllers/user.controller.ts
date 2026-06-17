@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import * as userService from "../services/user.service";
-import { moveFile } from "../utils/file";
-import User from "../models/User";
+import { moveFile, deleteFile } from "../utils/file";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -57,14 +56,11 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const data: any = { ...req.body };
-
-    if (req.file) {
-      const avatarPath = moveFile(req.file, "avatars");
-      data.avatar = avatarPath;
-    }
-
-    const user = await userService.updateUser(String(req.params.id), data);
+    const user = await userService.updateUser(
+      String(req.params.id),
+      req.body,
+      req.file,
+    );
 
     return res.status(200).json({
       message: "User Updated Successfully",
