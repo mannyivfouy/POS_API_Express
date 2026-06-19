@@ -6,6 +6,7 @@ import authRoute from "./routes/auth.route";
 import userRoute from "./routes/user.route";
 import roleRoute from "./routes/role.route";
 import categoryRoute from "./routes/category.route";
+import supplierRoute from "./routes/supplier.route";
 
 const app = express();
 
@@ -25,5 +26,8 @@ app.use("/api/roles", roleRoute);
 
 // Category Route
 app.use("/api/categories", categoryRoute);
+
+// Supplier Route
+app.use("/api/suppliers", supplierRoute);
 
 export default app;

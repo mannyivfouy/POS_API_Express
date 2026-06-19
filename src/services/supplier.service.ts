@@ -1,15 +1,15 @@
 import Supplier from "../models/Supplier";
 
 export const createSupplier = async (data: any) => {
-  const existingEmail = await Supplier.findOne({ email: data.email });
   const existingPhone = await Supplier.findOne({ phone: data.phone });
+  const existingEmail = await Supplier.findOne({ email: data.email });
+  
+  if (existingPhone) {
+    throw new Error("Phone Already Exists");
+  }
 
   if (existingEmail) {
     throw new Error("Email Already Exists");
-  }
-
-  if (existingPhone) {
-    throw new Error("Phone Already Exists");
   }
 
   const supplier = await Supplier.create(data);
@@ -42,7 +42,7 @@ export const updateSupplier = async (id: string, data: any) => {
 };
 
 export const deleteSupplier = async (id: string) => {
-  const supplier = await Supplier.findById(id);
+  const supplier = await Supplier.findByIdAndDelete(id);
 
   if (!supplier) {
     throw new Error("Supplier Not Found");
