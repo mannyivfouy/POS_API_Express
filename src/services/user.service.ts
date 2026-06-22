@@ -19,12 +19,12 @@ export const createUser = async (data: any) => {
 };
 
 export const getUsers = async () => {
-  const users = await User.find().select("-password");
+  const users = await User.find().select("-password").populate("roleId");
   return users;
 };
 
 export const getUserById = async (id: string) => {
-  const user = await User.findById(id).select("-password");
+  const user = await User.findById(id).select("-password").populate("roleId");
 
   if (!user) {
     throw new Error("User Not Found");
