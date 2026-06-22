@@ -1,23 +1,36 @@
 import Product from "../models/Product";
+import Category from "../models/Category";
 import { deleteFile, moveFile } from "../utils/file";
 
 export const createProduct = async (data: any) => {
+  const category = await Category.findById(data.categoryId);
+
+  if (!category) {
+    throw new Error("Category Not Found");
+  }
+
+  if (category.status === "inactive") {
+    throw new Error("Cannot Create Product In An Inactive Category");
+  }
+
   if (data.barcode) {
-    const existingProduct = await Product.findOne({ barcode: data.barcode });
+    const existingProduct = await Product.findOne({
+      barcode: data.barcode,
+    });
 
     if (existingProduct) {
       throw new Error("Barcode Already Exists");
     }
   }
 
-  const product = await Product.create({ ...data });
+  const product = await Product.create(data);
 
   return product;
 };
 
 export const getProducts = async () => {
   const products = await Product.find()
-    .populate("categoryId", "name status",)
+    .populate("categoryId", "name status")
     .populate("supplierId", "name contactPerson phone");
   return products;
 };
@@ -45,18 +58,42 @@ export const updateProduct = async (
     throw new Error("Product Not Found");
   }
 
+  if (data.categoryId) {
+    const category = await Category.findById(data.categoryId);
+
+    if (!category) {
+      throw new Error("Category Not Found");
+    }
+
+    if (category.status === "inactive") {
+      throw new Error("Cannot Assign Product To An inactive Category");
+    }
+  }
+
+  if (data.barcode && data.barcode !== product.barcode) {
+    const existingProduct = await Product.findOne({
+      barcode: data.barcode,
+      _id: { $ne: id },
+    });
+
+    if (existingProduct) {
+      throw new Error("Barcode Already Exists");
+    }
+  }
+
   if (file) {
     if (product.image) {
       deleteFile(product.image);
     }
+
     data.image = moveFile(file, "products");
   }
 
-  const updateProduct = await Product.findByIdAndUpdate(id, data, {
+  const updatedProduct = await Product.findByIdAndUpdate(id, data, {
     new: true,
   });
 
-  return updateProduct;
+  return updatedProduct;
 };
 
 export const deleteProduct = async (id: string) => {
