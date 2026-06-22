@@ -17,14 +17,14 @@ export const createProduct = async (data: any) => {
 
 export const getProducts = async () => {
   const products = await Product.find()
-    .populate("categoryId", "name")
+    .populate("categoryId", "name status",)
     .populate("supplierId", "name contactPerson phone");
   return products;
 };
 
 export const getProductById = async (id: string) => {
   const product = await Product.findById(id)
-    .populate("categoryId", "name")
+    .populate("categoryId", "name status")
     .populate("supplierId", "name contactPerson phone");
 
   if (!product) {
