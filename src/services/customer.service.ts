@@ -3,7 +3,7 @@ import Customer from "../models/Customer";
 export const createCustomer = async (data: any) => {
   const existingCustomer = await Customer.findOne({ phone: data.phone });
   if (existingCustomer) {
-    throw new Error("Customer Already Exists");
+    throw new Error("This Phone Number Already Used By Other Customer");
   }
 
   const customer = await Customer.create(data);
