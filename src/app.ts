@@ -7,11 +7,12 @@ import userRoute from "./routes/user.route";
 import roleRoute from "./routes/role.route";
 import categoryRoute from "./routes/category.route";
 import supplierRoute from "./routes/supplier.route";
+import productRoute from "./routes/product.route";
 
 const app = express();
 
 // Middleware
-app.use(coreMiddleware)
+app.use(coreMiddleware);
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -29,5 +30,8 @@ app.use("/api/categories", categoryRoute);
 
 // Supplier Route
 app.use("/api/suppliers", supplierRoute);
+
+// Product Route
+app.use("/api/products", productRoute);
 
 export default app;
