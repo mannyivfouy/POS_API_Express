@@ -18,7 +18,13 @@ export interface IProduct extends Document {
 const ProductSchema: Schema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    barcode: { type: String, required: true, trim: true, sparse: true },
+    barcode: {
+      type: String,
+      required: true,
+      trim: true,
+      sparse: true,
+      unique: true,
+    },
     costPrice: { type: Number, required: true },
     sellingPrice: { type: Number, required: true },
     stockQty: { type: Number, required: true, default: 0 },
