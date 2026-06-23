@@ -5,8 +5,9 @@ export const generateInvoice = async (
 ): Promise<string> => {
   const prefix = type === "purchase" ? "PUR" : "SEL";
 
-  const date = new Date();
-  const dateStr = Date.toString().slice(0, 10).replace(/-/g, "");
+  const now = new Date();
+
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
 
   const counter = await Counter.findByIdAndUpdate(
     type,
@@ -16,5 +17,5 @@ export const generateInvoice = async (
 
   const seq = String(counter?.seq ?? 1).padStart(4, "0");
 
-  return `${prefix}-${date}-${seq}`;
+  return `${prefix}-${dateStr}-${seq}`;
 };
