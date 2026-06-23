@@ -25,7 +25,7 @@ const SaleItem: Schema = new Schema(
       required: true,
       min: 1,
     },
-    costPrice: {
+    sellingPrice: {
       type: Number,
       required: true,
     },

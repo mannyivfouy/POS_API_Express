@@ -10,6 +10,7 @@ import supplierRoute from "./routes/supplier.route";
 import productRoute from "./routes/product.route";
 import customerRoute from "./routes/customer.route";
 import purchaseRouter from "./routes/purchase.route";
+import saleRoute from "./routes/sale.route";
 
 const app = express();
 
@@ -41,5 +42,8 @@ app.use("/api/customers", customerRoute);
 
 // Purchase Route
 app.use("/api/purchases", purchaseRouter);
+
+// Sale Route
+app.use("/api/sales", saleRoute);
 
 export default app;

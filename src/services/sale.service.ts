@@ -100,7 +100,7 @@ export const createSale = async (data: any) => {
 export const getSales = async () => {
   const sales = await Sale.find()
     .populate("customerId", "name phone")
-    .populate("createdBy", "username", "fullname")
+    .populate("createdBy", "username fullname")
     .sort({ createdAt: -1 });
 
   return sales;
