@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Product from "../models/Product";
 import Purchase from "../models/Purchase";
 import PurchaseItem from "../models/PurchaseItem";
@@ -6,78 +5,75 @@ import Supplier from "../models/Supplier";
 import { generateInvoice } from "../utils/generateInvoiceNo";
 
 export const createPurchase = async (data: any) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    const supplier = await Supplier.findById(data.supplierId).session(session);
+    // 1. Check supplier
+    const supplier = await Supplier.findById(data.supplierId);
     if (!supplier) {
-      throw new Error("Supplier Not Found");
+      throw new Error("Supplier not found");
     }
 
+    // 2. Check items
     if (!data.items || data.items.length === 0) {
-      throw new Error("Purchase Items Are Required");
+      throw new Error("Purchase items are required");
     }
 
+    // 3. Generate invoice
     const invoiceNo = await generateInvoice("purchase");
+
     let subtotal = 0;
 
-    const pruchaseArr = await Purchase.create(
-      [
-        {
-          invoiceNo,
-          supplierId: data.supplierId,
-          purchaseDate: data.purchaseDate || new Date(),
-          subtotal: 0,
-          discount: data.discount || 0,
-          tax: data.tax || 0,
-          shipping: data.shipping || 0,
-          total: 0,
-          paymentStatus: data.paymentStatus || "pending",
-          note: data.note,
-          createdBy: data.createdBy,
-        },
-      ],
-      { session },
-    );
+    // 4. Create purchase header
+    const purchase = await Purchase.create({
+      invoiceNo,
+      supplierId: data.supplierId,
+      purchaseDate: data.purchaseDate || new Date(),
 
-    const purchase = pruchaseArr[0];
+      subtotal: 0,
+      discount: data.discount || 0,
+      tax: data.tax || 0,
+      shipping: data.shipping || 0,
+      total: 0,
 
+      paymentStatus: data.paymentStatus || "PENDING",
+      note: data.note,
+
+      createdBy: data.createdBy,
+    });
+
+    // 5. Loop items
     for (const item of data.items) {
-      const product = await Product.findById(item.productId).session(session);
+      const product = await Product.findById(item.productId);
 
       if (!product) {
-        throw new Error(`Product Not Found: ${item.productId}`);
+        throw new Error(`Product not found: ${item.productId}`);
       }
 
       if (item.quantity <= 0) {
-        throw new Error("Quantity Must Be Greater Then 0");
+        throw new Error("Quantity must be greater than 0");
       }
 
       const lineTotal = item.quantity * item.costPrice;
       subtotal += lineTotal;
 
-      await PurchaseItem.create(
-        [
-          {
-            purchaseId: purchase._id,
-            productId: product._id,
-            quantity: item.quantity,
-            costPrice: item.costPrice,
-            total: lineTotal,
-          },
-        ],
-        {
-          session,
-        },
-      );
+      // 6. Create purchase item
+      await PurchaseItem.create({
+        purchaseId: purchase._id,
+        productId: product._id,
+        quantity: item.quantity,
+        costPrice: item.costPrice,
+        total: lineTotal,
+      });
 
-      product.stockQty += item.quantity;
+      // 7. Update product stock
+      product.stockQty += Number(item.quantity);
+
+      // 8. Update cost price
       product.costPrice = item.costPrice;
 
-      await product.save({ session });
+      await product.save();
     }
 
+    // 9. Calculate totals
     const discount = data.discount || 0;
     const tax = data.tax || 0;
     const shipping = data.shipping || 0;
@@ -87,16 +83,11 @@ export const createPurchase = async (data: any) => {
     purchase.subtotal = subtotal;
     purchase.total = total;
 
-    await purchase.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
+    await purchase.save();
 
     return purchase;
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    throw error;
+  } catch (error: any) {
+    throw new Error(error.message);
   }
 };
 
