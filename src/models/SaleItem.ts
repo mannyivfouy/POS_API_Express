@@ -36,3 +36,5 @@ const SaleItem: Schema = new Schema(
   },
   { timestamps: true },
 );
+
+export default mongoose.model<ISaleItem>("SaleItem", SaleItem);
