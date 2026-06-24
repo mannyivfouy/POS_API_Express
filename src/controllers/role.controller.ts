@@ -6,7 +6,7 @@ export const createRole = async (req: Request, res: Response) => {
     const role = await roleService.createRole(req.body);
 
     res.status(201).json({
-      message: "Role Create Successfully",
+      message: "Role Created Successfully",
       data: role,
     });
   } catch (err: any) {
