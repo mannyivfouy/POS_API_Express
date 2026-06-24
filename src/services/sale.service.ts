@@ -37,7 +37,7 @@ export const createSale = async (data: any) => {
       tax: data.tax || 0,
       total: 0,
 
-      paymentStatus: data.paymentStatus || "PENDING",
+      paymentStatus: data.paymentStatus || "pending",
       note: data.note || "",
       createdBy: data.createdBy,
     });
