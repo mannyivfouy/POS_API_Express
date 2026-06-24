@@ -6,7 +6,7 @@ export const createSupplier = async (req: Request, res: Response) => {
     const supplier = await supplierService.createSupplier(req.body);
 
     return res.status(201).json({
-      message: "Supplier Create Successfully",
+      message: "Supplier Created Successfully",
       data: supplier,
     });
   } catch (err: any) {

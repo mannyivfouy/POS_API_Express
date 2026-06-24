@@ -3,9 +3,19 @@ import { hashPassword } from "../utils/bcrypt";
 import { deleteFile, moveFile } from "../utils/file";
 
 export const createUser = async (data: any) => {
-  const existingUser = await User.findOne({ username: data.username });
-  if (existingUser) {
+  const existingUsername = await User.findOne({ username: data.username });
+  if (existingUsername) {
     throw new Error("Username Already Exists");
+  }
+
+  const existingEmail = await User.findOne({ email: data.email });
+  if (existingEmail) {
+    throw new Error("Email Already Exists");
+  }
+
+  const existingPhone = await User.findOne({ phone: data.phone });
+  if (existingPhone) {
+    throw new Error("Phone Number Already Exists");
   }
 
   const hashed = await hashPassword(data.password);
