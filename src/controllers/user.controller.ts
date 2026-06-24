@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as userService from "../services/user.service";
 import { moveFile, deleteFile } from "../utils/file";
+import { AuthRequest } from "../types/express";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -79,6 +80,40 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "User Deleted Successfully",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    const userProfile = await userService.getProfile((req as any).user.id);
+
+    return res.status(200).json({
+      message: "User Fetch Successfully",
+      data: userProfile,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const updateUserProfile = async (req: Request, res: Response) => {
+  try {
+    const userProfile = await userService.updateProfile(
+      (req as any).user.id,
+      req.body,
+      req.file,
+    );
+
+    return res.status(200).json({
+      message: "User Updated Successfully",
+      data: userProfile,
     });
   } catch (err: any) {
     return res.status(400).json({

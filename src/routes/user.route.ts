@@ -3,6 +3,7 @@ import * as userController from "../controllers/user.controller";
 import { createUploader } from "../middlewares/upload.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/role.middleware";
+import { updateProfile } from './../services/user.service';
 
 const router = express.Router();
 
@@ -15,6 +16,19 @@ router.post(
   uploadtemp.single("avatar"),
   userController.createUser,
 );
+
+router.get(
+  "/profile",
+  authMiddleware,
+  userController.getUserProfile
+)
+
+router.put  (
+  "/profile",
+  authMiddleware,
+  uploadtemp.single("avatar"),
+  userController.updateUserProfile
+)
 
 router.get(
   "/",
@@ -44,5 +58,7 @@ router.delete(
   authorize("Admin"),
   userController.deleteUser,
 );
+
+
 
 export default router;
