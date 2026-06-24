@@ -2,7 +2,7 @@ import User from "../models/User";
 import { hashPassword } from "../utils/bcrypt";
 import { deleteFile, moveFile } from "../utils/file";
 
-export const createUser = async (data: any) => {
+export const createUser = async (data: any, file?: Express.Multer.File) => {
   const existingUsername = await User.findOne({ username: data.username });
   if (existingUsername) {
     throw new Error("Username Already Exists");
@@ -61,9 +61,17 @@ export const updateUser = async (
     data.avatar = moveFile(file, "avatars");
   }
 
+  if (!data.password) {
+    delete data.password;
+  } else {
+    data.password = await hashPassword(data.password);
+  }
+
   const updateUser = await User.findByIdAndUpdate(id, data, {
     new: true,
-  }).select("-password").populate("roleId");
+  })
+    .select("-password")
+    .populate("roleId");
 
   return updateUser;
 };
@@ -114,9 +122,17 @@ export const updateProfile = async (
     data.avatar = moveFile(file, "avatars");
   }
 
+  if (!data.password) {
+    delete data.password;
+  } else {
+    data.password = await hashPassword(data.password);
+  }
+
   const updateUserProfile = await User.findByIdAndUpdate(id, data, {
     new: true,
-  }).select("-password").populate("roleId");
+  })
+    .select("-password")
+    .populate("roleId");
 
   return updateUserProfile;
 };
