@@ -63,7 +63,7 @@ export const updateUser = async (
 
   const updateUser = await User.findByIdAndUpdate(id, data, {
     new: true,
-  }).select("-password");
+  }).select("-password").populate("roleId");
 
   return updateUser;
 };
@@ -82,4 +82,41 @@ export const deleteUser = async (id: string) => {
   await User.findByIdAndDelete(id);
 
   return { message: "User Deleted Successfully" };
+};
+
+export const getProfile = async (id: string) => {
+  const userProfile = await User.findById(id)
+    .select("-password")
+    .populate("roleId");
+
+  if (!userProfile) {
+    throw new Error("User Not Found");
+  }
+
+  return userProfile;
+};
+
+export const updateProfile = async (
+  id: string,
+  data: any,
+  file?: Express.Multer.File,
+) => {
+  const userProfile = await User.findById(id);
+
+  if (!userProfile) {
+    throw new Error("User Not Found");
+  }
+
+  if (file) {
+    if (userProfile.avatar) {
+      deleteFile(userProfile.avatar);
+    }
+    data.avatar = moveFile(file, "avatars");
+  }
+
+  const updateUserProfile = await User.findByIdAndUpdate(id, data, {
+    new: true,
+  }).select("-password").populate("roleId");
+
+  return updateUserProfile;
 };
