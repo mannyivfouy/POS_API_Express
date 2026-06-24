@@ -34,7 +34,7 @@ export const createPurchase = async (data: any) => {
       shipping: data.shipping || 0,
       total: 0,
 
-      paymentStatus: data.paymentStatus || "PENDING",
+      paymentStatus: data.paymentStatus || "pending",
       note: data.note,
 
       createdBy: data.createdBy,
