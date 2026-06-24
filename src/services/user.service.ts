@@ -2,7 +2,7 @@ import User from "../models/User";
 import { hashPassword } from "../utils/bcrypt";
 import { deleteFile, moveFile } from "../utils/file";
 
-export const createUser = async (data: any) => {
+export const createUser = async (data: any, file?: Express.Multer.File) => {
   const existingUsername = await User.findOne({ username: data.username });
   if (existingUsername) {
     throw new Error("Username Already Exists");
