@@ -3,6 +3,7 @@ import Sale from "../models/Sale";
 import SaleItem from "../models/SaleItem";
 import Customer from "../models/Customer";
 import { generateInvoice } from "../utils/generateInvoiceNo";
+import { sendTelegramMessage } from "./telegram.service";
 
 export const createSale = async (data: any) => {
   try {
@@ -42,6 +43,8 @@ export const createSale = async (data: any) => {
       createdBy: data.createdBy,
     });
 
+    const itemLines: { name: string; quantity: number; total: number }[] = [];
+
     // Process Item
     for (const item of data.items) {
       const product = await Product.findById(item.productId);
@@ -67,6 +70,12 @@ export const createSale = async (data: any) => {
       const lineTotal = quantity * sellingPrice;
       subtotal += lineTotal;
 
+      itemLines.push({
+        name: product.name,
+        quantity,
+        total: lineTotal,
+      });
+
       // Craete Sale Item
       await SaleItem.create({
         saleId: sale._id,
@@ -90,6 +99,26 @@ export const createSale = async (data: any) => {
     sale.total = total;
 
     await sale.save();
+
+    await sendTelegramMessage(
+      `🟢 <b>NEW SALE CREATED</b>
+    ━━━━━━━━━━━━━━━━━━━━━━━━
+
+    🧾 <b>Invoice:</b> ${sale.invoiceNo}
+    📅 <b>Date:</b> ${new Date().toLocaleString()}
+
+    📦 <b>Items:</b>
+    ${itemLines.map((item) => `  • ${item.name} x${item.quantity} — $${item.total.toFixed(2)}`).join("\n")}
+
+    ━━━━━━━━━━━━━━━━━━━━━━━━
+    💵 Subtotal:   $${subtotal.toFixed(2)}
+    📉 Discount:   $${discount.toFixed(2)}
+    🧾 Tax:        $${tax.toFixed(2)}
+    💰 <b>Total:     $${sale.total.toFixed(2)}</b>
+
+    💳 <b>Payment:</b> ${sale.paymentStatus === "paid" ? "✅ Paid" : sale.paymentStatus === "pending" ? "⏳ Pending" : "❌ Unpaid"}
+    ━━━━━━━━━━━━━━━━━━━━━━━━`,
+    );
 
     return sale;
   } catch (error: any) {
