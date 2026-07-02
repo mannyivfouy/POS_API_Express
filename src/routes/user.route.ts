@@ -3,7 +3,7 @@ import * as userController from "../controllers/user.controller";
 import { createUploader } from "../middlewares/upload.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/role.middleware";
-import { updateProfile } from './../services/user.service';
+import { updateProfile } from "./../services/user.service";
 
 const router = express.Router();
 
@@ -17,24 +17,27 @@ router.post(
   userController.createUser,
 );
 
-router.get(
-  "/profile",
-  authMiddleware,
-  userController.getUserProfile
-)
+router.get("/profile", authMiddleware, userController.getUserProfile);
 
-router.put  (
+router.put(
   "/profile",
   authMiddleware,
   uploadtemp.single("avatar"),
-  userController.updateUserProfile
-)
+  userController.updateUserProfile,
+);
 
 router.get(
   "/",
   authMiddleware,
   authorize("Admin", "Manager"),
   userController.getUsers,
+);
+
+router.get(
+  "/stats",
+  authMiddleware,
+  authorize("Admin"),
+  userController.getUserStats,
 );
 
 router.get(

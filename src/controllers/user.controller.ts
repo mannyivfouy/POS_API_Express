@@ -121,3 +121,18 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getUserStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await userService.getUserStats();
+
+    return res.status(200).json({
+      message: "User Stats Fetch Successfully",
+      data: stats,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};

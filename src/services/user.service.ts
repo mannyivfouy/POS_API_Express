@@ -188,3 +188,19 @@ export const updateProfile = async (
 
   return updateUserProfile;
 };
+
+export const getUserStats = async () => {
+  const totalUser = await User.countDocuments();
+  const activeUser = await User.countDocuments({
+    status: "active",
+  });
+  const inactiveUser = await User.countDocuments({
+    status: "inactive"
+  })
+
+  return{
+    totalUser,
+    activeUser,
+    inactiveUser
+  }
+};
