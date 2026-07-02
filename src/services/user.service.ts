@@ -28,9 +28,61 @@ export const createUser = async (data: any, file?: Express.Multer.File) => {
   return user;
 };
 
-export const getUsers = async () => {
-  const users = await User.find().select("-password").populate("roleId");
-  return users;
+export const getUsers = async (query: any) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const search = query.search || "";
+
+  const skip = (page - 1) * limit;
+
+  const filter: any = {};
+
+  if (search) {
+    filter.$or = [
+      {
+        username: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        fullname: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        phone: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const users = await User.find(filter)
+    .select("-password")
+    .populate("roleId")
+    .skip(skip)
+    .limit(limit);
+
+  const total = await User.countDocuments(filter);
+
+  return {
+    data: users,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const getUserById = async (id: string) => {

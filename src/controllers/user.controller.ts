@@ -27,11 +27,11 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await userService.getUsers();
+    const users = await userService.getUsers(req.query);
 
     return res.status(200).json({
       message: "Users Fetch Successfully",
-      data: users,
+      ...users,
     });
   } catch (err: any) {
     return res.status(400).json({
