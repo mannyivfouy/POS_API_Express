@@ -9,6 +9,10 @@ export const login = async (username: string, password: string) => {
     throw new Error("Invalid Credentials");
   }
 
+  if (user.status === "inactive") {
+    throw new Error("ACCOUNT_INACTIVE");
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
@@ -16,7 +20,7 @@ export const login = async (username: string, password: string) => {
   }
 
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-    expiresIn: "30d",
+    expiresIn: "1d",
   });
 
   return { token, user };
