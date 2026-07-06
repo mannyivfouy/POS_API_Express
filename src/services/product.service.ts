@@ -28,11 +28,47 @@ export const createProduct = async (data: any) => {
   return product;
 };
 
-export const getProducts = async () => {
-  const products = await Product.find()
+export const getProducts = async (query: any) => {
+  const page = Number(query.page);
+  const limit = Number(query.limit);
+  const search = query.search || "";
+
+  const skip = (page - 1) * limit;
+
+  const filter: any = {};
+
+  if (search) {
+    filter.$or = [
+      {
+        name: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        barcode: {
+          $regex: search,
+          $options: "i"
+        }
+      }      
+    ];
+  }
+
+  const products = await Product.find(filter)
     .populate("categoryId", "name status")
     .populate("supplierId", "name contactPerson phone");
-  return products;
+
+  const total = await Product.countDocuments(filter);
+
+  return {
+    data: products,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const getProductById = async (id: string) => {
@@ -110,4 +146,20 @@ export const deleteProduct = async (id: string) => {
   await Product.findByIdAndDelete(id);
 
   return { message: "Product Deleted Successfully" };
+};
+
+export const getProductStats = async () => {
+  const totalProduct = await Product.countDocuments();
+  const activeProduct = await Product.countDocuments({
+    status: "active",
+  });
+  const inactiveProduct = await Product.countDocuments({
+    status: "inactive",
+  });
+
+  return {
+    totalProduct,
+    activeProduct,
+    inactiveProduct,
+  };
 };
