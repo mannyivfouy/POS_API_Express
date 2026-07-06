@@ -26,7 +26,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const products = await productService.getProducts();
+    const products = await productService.getProducts(req.query);
 
     return res.status(200).json({
       message: "Products Fetch Successfully",
@@ -79,6 +79,21 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Product Deleted Successfully",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const getProductStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await productService.getProductStats();
+
+    return res.status(200).json({
+      message: "Product Stats Fetch Successfully",
+      data: stats,
     });
   } catch (err: any) {
     return res.status(400).json({
