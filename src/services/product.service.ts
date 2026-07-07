@@ -56,7 +56,9 @@ export const getProducts = async (query: any) => {
 
   const products = await Product.find(filter)
     .populate("categoryId", "name status")
-    .populate("supplierId", "name contactPerson phone");
+    .populate("supplierId", "name contactPerson phone")
+    .skip(skip)
+    .limit(limit)
 
   const total = await Product.countDocuments(filter);
 

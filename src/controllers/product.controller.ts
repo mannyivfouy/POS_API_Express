@@ -30,7 +30,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Products Fetch Successfully",
-      data: products,
+      ...products
     });
   } catch (err: any) {
     return res.status(400).json({
