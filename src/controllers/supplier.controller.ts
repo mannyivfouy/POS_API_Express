@@ -18,7 +18,7 @@ export const createSupplier = async (req: Request, res: Response) => {
 
 export const getSuppliers = async (req: Request, res: Response) => {
   try {
-    const suppliers = await supplierService.getSuppliers();
+    const suppliers = await supplierService.getSuppliers(req.query);
 
     return res.status(200).json({
       message: "Suppliers Fetch Successfully",

@@ -1,4 +1,5 @@
 import Customer from "../models/Customer";
+import { paginate } from "../utils/query";
 
 export const createCustomer = async (data: any) => {
   const existingCustomer = await Customer.findOne({ phone: data.phone });
@@ -10,9 +11,12 @@ export const createCustomer = async (data: any) => {
   return customer;
 };
 
-export const getCustomers = async () => {
-  const customers = await Customer.find();
-  return customers;
+export const getCustomers = async (query: any) => {
+  return paginate({
+    model: Customer,
+    query,
+    searchFields: ["name", "phone"],    
+  })
 };
 
 export const getCustomerById = async (id: string) => {

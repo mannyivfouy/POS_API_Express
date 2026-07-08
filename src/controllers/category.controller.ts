@@ -18,11 +18,11 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await categoryService.getCategories();
+    const categories = await categoryService.getCategories(req.query);
 
     return res.status(200).json({
       message: "Categories Fetch Successfully",
-      data: categories,
+      ...categories
     });
   } catch (err: any) {
     return res.status(400).json({

@@ -1,6 +1,7 @@
 import User from "../models/User";
 import { hashPassword } from "../utils/bcrypt";
 import { deleteFile, moveFile } from "../utils/file";
+import { paginate } from "../utils/query";
 
 export const createUser = async (data: any, file?: Express.Multer.File) => {
   const existingUsername = await User.findOne({ username: data.username });
@@ -29,60 +30,14 @@ export const createUser = async (data: any, file?: Express.Multer.File) => {
 };
 
 export const getUsers = async (query: any) => {
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
-  const search = query.search || "";
-
-  const skip = (page - 1) * limit;
-
-  const filter: any = {};
-
-  if (search) {
-    filter.$or = [
-      {
-        username: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        fullname: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        email: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        phone: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-    ];
-  }
-
-  const users = await User.find(filter)
-    .select("-password")
-    .populate("roleId")
-    .skip(skip)
-    .limit(limit);
-
-  const total = await User.countDocuments(filter);
-
-  return {
-    data: users,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPage: Math.ceil(total / limit),
-    },
-  };
+  return paginate({
+    model: User,
+    query,
+    searchFields: ["username", "fullname", "email", "phone"],
+    allowedFilters: ["status", "roleId"],
+    select: "-password",
+    populate: "roleId",
+  });
 };
 
 export const getUserById = async (id: string) => {
@@ -195,12 +150,12 @@ export const getUserStats = async () => {
     status: "active",
   });
   const inactiveUser = await User.countDocuments({
-    status: "inactive"
-  })
+    status: "inactive",
+  });
 
-  return{
+  return {
     totalUser,
     activeUser,
-    inactiveUser
-  }
+    inactiveUser,
+  };
 };

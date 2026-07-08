@@ -18,7 +18,7 @@ export const createPurchase = async (req: Request, res: Response) => {
 
 export const getPurchases = async (req: Request, res: Response) => {
   try {
-    const purchses = await purchaseService.getPurchases();
+    const purchses = await purchaseService.getPurchases(req.query);
 
     return res.status(200).json({
       message: "Purchases Fetch Successfully",

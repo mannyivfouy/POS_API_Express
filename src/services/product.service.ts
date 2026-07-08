@@ -1,6 +1,7 @@
 import Product from "../models/Product";
 import Category from "../models/Category";
 import { deleteFile, moveFile } from "../utils/file";
+import { paginate } from "../utils/query";
 
 export const createProduct = async (data: any) => {
   const category = await Category.findById(data.categoryId);
@@ -29,48 +30,13 @@ export const createProduct = async (data: any) => {
 };
 
 export const getProducts = async (query: any) => {
-  const page = Number(query.page);
-  const limit = Number(query.limit);
-  const search = query.search || "";
-
-  const skip = (page - 1) * limit;
-
-  const filter: any = {};
-
-  if (search) {
-    filter.$or = [
-      {
-        name: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        barcode: {
-          $regex: search,
-          $options: "i"
-        }
-      }      
-    ];
-  }
-
-  const products = await Product.find(filter)
-    .populate("categoryId", "name status")
-    .populate("supplierId", "name contactPerson phone")
-    .skip(skip)
-    .limit(limit)
-
-  const total = await Product.countDocuments(filter);
-
-  return {
-    data: products,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPage: Math.ceil(total / limit),
-    },
-  };
+  return paginate({
+    model: Product,
+    query,
+    searchFields: ["name", "description"],
+    allowedFilters: ["status, categoryId"],
+    populate: ["categoryId", "supplierId"],
+  });
 };
 
 export const getProductById = async (id: string) => {
