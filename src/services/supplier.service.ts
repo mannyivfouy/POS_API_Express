@@ -1,9 +1,10 @@
 import Supplier from "../models/Supplier";
+import { paginate } from "../utils/query";
 
 export const createSupplier = async (data: any) => {
   const existingPhone = await Supplier.findOne({ phone: data.phone });
   const existingEmail = await Supplier.findOne({ email: data.email });
-  
+
   if (existingPhone) {
     throw new Error("Phone Already Exists");
   }
@@ -16,9 +17,13 @@ export const createSupplier = async (data: any) => {
   return supplier;
 };
 
-export const getSuppliers = async () => {
-  const supplier = await Supplier.find();
-  return supplier;
+export const getSuppliers = async (query: any) => {
+  return paginate({
+    model: Supplier,
+    query,
+    searchFields: ["name", "contactPerson", "phone", "email"],
+    allowedFilters: ["status"],
+  });
 };
 
 export const getSupplierById = async (id: string) => {

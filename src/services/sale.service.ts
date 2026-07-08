@@ -4,6 +4,7 @@ import SaleItem from "../models/SaleItem";
 import Customer from "../models/Customer";
 import { generateInvoice } from "../utils/generateInvoiceNo";
 import { sendTelegramMessage } from "./telegram.service";
+import { paginate } from "../utils/query";
 
 export const createSale = async (data: any) => {
   try {
@@ -126,13 +127,14 @@ export const createSale = async (data: any) => {
   }
 };
 
-export const getSales = async () => {
-  const sales = await Sale.find()
-    .populate("customerId", "name phone")
-    .populate("createdBy", "username fullname")
-    .sort({ createdAt: -1 });
-
-  return sales;
+export const getSales = async (query: any) => {
+  return paginate({
+    model: Sale,
+    query,
+    searchFields: ["invoiceNo", "paymentStatus", "note"],
+    allowedFilters: ["paymentStatus"],
+    populate:["createdBy"],
+  })
 };
 
 export const getSaleById = async (id: string) => {

@@ -3,6 +3,7 @@ import Purchase from "../models/Purchase";
 import PurchaseItem from "../models/PurchaseItem";
 import Supplier from "../models/Supplier";
 import { generateInvoice } from "../utils/generateInvoiceNo";
+import { paginate } from "../utils/query";
 
 export const createPurchase = async (data: any) => {
   try {
@@ -91,13 +92,14 @@ export const createPurchase = async (data: any) => {
   }
 };
 
-export const getPurchases = async () => {
-  const purchases = await Purchase.find()
-    .populate("supplierId", "name contactPerson")
-    .populate("createdBy", "username fullname")
-    .sort({ createdAt: -1 });
-
-  return purchases;
+export const getPurchases = async (query: any) => {
+  return paginate({
+    model: Purchase,
+    query,
+    searchFields: ["invoiceNo", "paymentStatus", "note"],
+    allowedFilters: ["paymentStatus"],
+    populate: "createdBy"
+  });
 };
 
 export const getPurchaseById = async (id: string) => {

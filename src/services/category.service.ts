@@ -1,5 +1,6 @@
 import Category from "../models/Category";
 import Product from "../models/Product";
+import { paginate } from "../utils/query";
 
 export const createCategory = async (data: any) => {
   const existingCategory = await Category.findOne({ name: data.name });
@@ -12,9 +13,13 @@ export const createCategory = async (data: any) => {
   return category;
 };
 
-export const getCategories = async () => {
-  const category = await Category.find();
-  return category;
+export const getCategories = async (query: any) => {
+  return paginate({
+    model: Category,
+    query,
+    searchFields: ["name", "description"],
+    allowedFilters: ['status'],    
+  })
 };
 
 export const getCategoryById = async (id: string) => {

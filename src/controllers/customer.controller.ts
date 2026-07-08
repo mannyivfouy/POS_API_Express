@@ -18,11 +18,11 @@ export const createCustomer = async (req: Request, res: Response) => {
 
 export const getCustomers = async (req: Request, res: Response) => {
   try {
-    const customers = await customerService.getCustomers();
+    const customers = await customerService.getCustomers(req.query);
 
     return res.status(200).json({
       message: "Customers Fetch Successfully",
-      data: customers,
+      ...customers,
     });
   } catch (err: any) {
     return res.status(400).json({
