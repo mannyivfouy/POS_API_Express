@@ -156,6 +156,6 @@ export const getUserStats = async () => {
   return {
     totalUser,
     activeUser,
-    inactiveUser,
+    inactiveUser, 
   };
 };

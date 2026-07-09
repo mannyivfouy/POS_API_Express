@@ -22,7 +22,7 @@ export const getSuppliers = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Suppliers Fetch Successfully",
-      data: suppliers,
+      ...suppliers,
     });
   } catch (err: any) {
     return res.status(400).json({
@@ -73,6 +73,21 @@ export const deleteSupplier = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Supplier Deleted Successfully",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const getSupplierStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await supplierService.getSupplierStats();
+
+    return res.status(200).json({
+      message: "Supplier Stats Fetch Successfully",
+      data: stats,
     });
   } catch (err: any) {
     return res.status(400).json({
