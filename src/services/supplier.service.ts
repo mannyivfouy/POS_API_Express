@@ -55,3 +55,19 @@ export const deleteSupplier = async (id: string) => {
 
   return { message: "Supplier Deleted Successfully" };
 };
+
+export const getSupplierStats = async () => {
+  const totalSupplier = await Supplier.countDocuments();
+  const activeSupplier = await Supplier.countDocuments({
+    status: "active"
+  })
+  const inactiveSupplier = await Supplier.countDocuments({
+    status: "inactive"
+  })
+
+  return {
+    totalSupplier,
+    activeSupplier,
+    inactiveSupplier
+  }
+}
