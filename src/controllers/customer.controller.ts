@@ -11,6 +11,7 @@ export const createCustomer = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
+      field: err.field,
       message: err.message,
     });
   }

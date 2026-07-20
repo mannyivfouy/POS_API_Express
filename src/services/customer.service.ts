@@ -4,7 +4,10 @@ import { paginate } from "../utils/query";
 export const createCustomer = async (data: any) => {
   const existingCustomer = await Customer.findOne({ phone: data.phone });
   if (existingCustomer) {
-    throw new Error("This Phone Number Already Used By Other Customer");
+    throw {
+      field : 'phone',
+      message : 'This phone number already used by another customer'
+    }
   }
 
   const customer = await Customer.create(data);
