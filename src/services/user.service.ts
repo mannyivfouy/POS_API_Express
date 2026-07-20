@@ -6,17 +6,26 @@ import { paginate } from "../utils/query";
 export const createUser = async (data: any, file?: Express.Multer.File) => {
   const existingUsername = await User.findOne({ username: data.username });
   if (existingUsername) {
-    throw new Error("Username Already Exists");
+    throw {
+      field : "username",
+      message: "Username already exists"
+    }
   }
 
   const existingEmail = await User.findOne({ email: data.email });
   if (existingEmail) {
-    throw new Error("Email Already Exists");
+    throw {
+      field : "email",
+      message: "Email already exists"
+    }
   }
 
   const existingPhone = await User.findOne({ phone: data.phone });
   if (existingPhone) {
-    throw new Error("Phone Number Already Exists");
+    throw {
+      field : "phone",
+      message : "Phone already exists"
+    }
   }
 
   const hashed = await hashPassword(data.password);
