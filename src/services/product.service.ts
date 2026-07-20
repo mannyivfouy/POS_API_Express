@@ -20,7 +20,10 @@ export const createProduct = async (data: any) => {
     });
 
     if (existingProduct) {
-      throw new Error("Barcode Already Exists");
+      throw {
+        field: "barcode",
+        message: "Barcode already exists",
+      };
     }
   }
 

@@ -6,11 +6,17 @@ export const createSupplier = async (data: any) => {
   const existingEmail = await Supplier.findOne({ email: data.email });
 
   if (existingPhone) {
-    throw new Error("Phone Already Exists");
+    throw {
+      field: "phone",
+      message: "Phone already exists",
+    };
   }
 
   if (existingEmail) {
-    throw new Error("Email Already Exists");
+    throw {
+      field: "email",
+      message: "Email already exists",
+    };
   }
 
   const supplier = await Supplier.create(data);
@@ -59,15 +65,15 @@ export const deleteSupplier = async (id: string) => {
 export const getSupplierStats = async () => {
   const totalSupplier = await Supplier.countDocuments();
   const activeSupplier = await Supplier.countDocuments({
-    status: "active"
-  })
+    status: "active",
+  });
   const inactiveSupplier = await Supplier.countDocuments({
-    status: "inactive"
-  })
+    status: "inactive",
+  });
 
   return {
     totalSupplier,
     activeSupplier,
-    inactiveSupplier
-  }
-}
+    inactiveSupplier,
+  };
+};

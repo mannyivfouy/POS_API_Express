@@ -5,7 +5,10 @@ import { paginate } from "../utils/query";
 export const createCategory = async (data: any) => {
   const existingCategory = await Category.findOne({ name: data.name });
   if (existingCategory) {
-    throw new Error("Category Already Exists");
+    throw {
+      field: 'category',
+      message: 'Category already exists'
+    }
   }
 
   const category = await Category.create(data);

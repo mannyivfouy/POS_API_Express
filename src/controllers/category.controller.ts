@@ -11,7 +11,8 @@ export const createCategory = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
-      message: err.messag,
+      field: err.field,
+      message: err.message,
     });
   }
 };
@@ -26,7 +27,7 @@ export const getCategories = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
-      message: err.messag,
+      message: err.message,
     });
   }
 };
@@ -43,7 +44,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
-      message: err.messag,
+      message: err.message,
     });
   }
 };
@@ -62,7 +63,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
-      message: err.messag,
+      message: err.message,
     });
   }
 };

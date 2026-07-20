@@ -20,7 +20,8 @@ export const createUser = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({
-      message: err.message,
+      field : err.field,
+      message : err.message
     });
   }
 };
