@@ -18,11 +18,11 @@ export const createPurchase = async (req: Request, res: Response) => {
 
 export const getPurchases = async (req: Request, res: Response) => {
   try {
-    const purchses = await purchaseService.getPurchases(req.query);
+    const purchases = await purchaseService.getPurchases(req.query);
 
     return res.status(200).json({
       message: "Purchases Fetch Successfully",
-      data: purchses,
+      data: purchases,
     });
   } catch (err: any) {
     return res.status(400).json({

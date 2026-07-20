@@ -10,7 +10,7 @@ export const createSupplier = async (req: Request, res: Response) => {
       data: supplier,
     });
   } catch (err: any) {
-    return res.status(400).json({
+    return res.status(409).json({
       field: err.field,
       message: err.message,
     });

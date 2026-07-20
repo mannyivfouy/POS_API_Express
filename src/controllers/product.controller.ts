@@ -18,7 +18,7 @@ export const createProduct = async (req: Request, res: Response) => {
       data: product,
     });
   } catch (err: any) {
-    return res.status(400).json({
+    return res.status(409).json({
       field: err.field,
       message: err.message,
     });

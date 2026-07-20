@@ -10,7 +10,7 @@ export const createRole = async (req: Request, res: Response) => {
       data: role,
     });
   } catch (err: any) {
-    res.status(400).json({
+    res.status(409).json({
       field: err.field,
       message: err.message,
     });
