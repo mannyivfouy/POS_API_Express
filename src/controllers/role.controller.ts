@@ -11,6 +11,7 @@ export const createRole = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     res.status(400).json({
+      field: err.field,
       message: err.message,
     });
   }

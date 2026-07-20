@@ -4,7 +4,10 @@ import User from "../models/User";
 export const createRole = async (data: any) => {
   const existingRole = await Role.findOne({ name: data.name });
   if (existingRole) {
-    throw new Error("Role Already Exists");
+    throw {
+      field : 'role',
+      message: 'Role already exists'
+    }
   }
 
   return await Role.create(data);
