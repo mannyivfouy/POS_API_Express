@@ -5,9 +5,9 @@ export const createCustomer = async (data: any) => {
   const existingCustomer = await Customer.findOne({ phone: data.phone });
   if (existingCustomer) {
     throw {
-      field : 'phone',
-      message : 'This phone number already used by another customer'
-    }
+      field: "phone",
+      message: "This phone number already used by another customer",
+    };
   }
 
   const customer = await Customer.create(data);
@@ -18,8 +18,8 @@ export const getCustomers = async (query: any) => {
   return paginate({
     model: Customer,
     query,
-    searchFields: ["name", "phone"],    
-  })
+    searchFields: ["name", "phone"],
+  });
 };
 
 export const getCustomerById = async (id: string) => {
@@ -50,4 +50,12 @@ export const deleteCustomer = async (id: string) => {
   }
 
   return { message: "Customer Deleted Successfully" };
+};
+
+export const getCustomerStats = async () => {
+  const totalCustomer = await Customer.countDocuments();
+
+  return {
+    totalCustomer,
+  };
 };

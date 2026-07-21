@@ -81,3 +81,18 @@ export const deleteCustomer = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getCustomerStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await customerService.getCustomerStats();
+
+    return res.status(200).json({
+      message: "Customer Stats Fetch Successfully",
+      data: stats,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
