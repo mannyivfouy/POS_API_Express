@@ -20,6 +20,13 @@ router.get(
 );
 
 router.get(
+  "/stats",
+  authMiddleware,
+  authorize("Admin", "Manager", "Cashier"),
+  customerController.getCustomerStats,
+);
+
+router.get(
   "/:id",
   authMiddleware,
   authorize("Admin", "Manager", "Cashier"),
