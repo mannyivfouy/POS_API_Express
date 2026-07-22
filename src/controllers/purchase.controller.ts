@@ -22,7 +22,7 @@ export const getPurchases = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Purchases Fetch Successfully",
-      data: purchases,
+      ...purchases,
     });
   } catch (err: any) {
     return res.status(400).json({
