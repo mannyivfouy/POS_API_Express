@@ -23,7 +23,7 @@ export const getCategories = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Categories Fetch Successfully",
-      ...categories
+      ...categories,
     });
   } catch (err: any) {
     return res.status(400).json({
@@ -74,6 +74,21 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Category Deleted Successfully",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const getCategoryStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await categoryService.getCategoryStats();
+
+    return res.status(200).json({
+      message: "Category Stats Fetch Successfully",
+      data: stats,
     });
   } catch (err: any) {
     return res.status(400).json({

@@ -6,9 +6,9 @@ export const createCategory = async (data: any) => {
   const existingCategory = await Category.findOne({ name: data.name });
   if (existingCategory) {
     throw {
-      field: 'category',
-      message: 'Category already exists'
-    }
+      field: "category",
+      message: "Category already exists",
+    };
   }
 
   const category = await Category.create(data);
@@ -21,8 +21,8 @@ export const getCategories = async (query: any) => {
     model: Category,
     query,
     searchFields: ["name", "description"],
-    allowedFilters: ['status'],    
-  })
+    allowedFilters: ["status"],
+  });
 };
 
 export const getCategoryById = async (id: string) => {
@@ -70,4 +70,20 @@ export const deleteCategory = async (id: string) => {
   await Category.findByIdAndDelete(id);
 
   return { message: "Category Deleted Successfully" };
+};
+
+export const getCategoryStats = async () => {
+  const totalCategory = await Category.countDocuments();
+  const activeCategory = await Category.countDocuments({
+    status: "active",
+  });
+  const inactiveCategory = await Category.countDocuments({
+    status: "inactive",
+  });
+
+  return {
+    totalCategory,
+    activeCategory,
+    inactiveCategory,
+  };
 };
