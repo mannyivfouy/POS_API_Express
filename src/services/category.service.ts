@@ -6,7 +6,7 @@ export const createCategory = async (data: any) => {
   const existingCategory = await Category.findOne({ name: data.name });
   if (existingCategory) {
     throw {
-      field: "category",
+      field: "name",
       message: "Category already exists",
     };
   }
