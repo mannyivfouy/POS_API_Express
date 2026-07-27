@@ -56,15 +56,21 @@ export const deleteCategory = async (id: string) => {
   const category = await Category.findById(id);
 
   if (!category) {
-    throw new Error("Category Not Found");
+    throw {
+      status: 404,
+      message: "Category Not Found"
+    };
   }
 
   const hasProduct = await Product.exists({ categoryId: id });
 
   if (hasProduct) {
-    throw new Error(
-      "Cannot Delete Category Because It Is Assing To One or More Products",
-    );
+    throw {
+      status: 409,
+      field: "category",
+      message:
+        "Cannot Delete Category Because It Is Assing To One or More Products",
+    };
   }
 
   await Category.findByIdAndDelete(id);
