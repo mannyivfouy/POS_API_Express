@@ -76,7 +76,8 @@ export const deleteCategory = async (req: Request, res: Response) => {
       message: "Category Deleted Successfully",
     });
   } catch (err: any) {
-    return res.status(400).json({
+    return res.status(err.status || 500).json({
+      field: err.field,
       message: err.message,
     });
   }
