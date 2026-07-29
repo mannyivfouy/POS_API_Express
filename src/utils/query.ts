@@ -1,11 +1,12 @@
 import { Model } from "mongoose";
+import { PopulateOptions } from "mongoose";
 
 interface QueryOptions {
   model: Model<any>;
   query: any;
   searchFields?: string[];
   allowedFilters?: string[];
-  populate?: string | string[];
+  populate?: string | string[] | PopulateOptions | PopulateOptions[];
   select?: string;
   defaultLimit?: number;
   extraFilter?: any;
@@ -55,7 +56,7 @@ export const paginate = async ({
   }
 
   if (populate) {
-    dbQuery = dbQuery.populate(populate);
+    dbQuery = dbQuery.populate(populate as any);
   }
 
   const data = await dbQuery
