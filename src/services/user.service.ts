@@ -2,30 +2,31 @@ import User from "../models/User";
 import { hashPassword } from "../utils/bcrypt";
 import { deleteFile, moveFile } from "../utils/file";
 import { paginate } from "../utils/query";
+import { calculateTrend } from "../utils/trend";
 
 export const createUser = async (data: any, file?: Express.Multer.File) => {
   const existingUsername = await User.findOne({ username: data.username });
   if (existingUsername) {
     throw {
-      field : "username",
-      message: "Username already exists"
-    }
+      field: "username",
+      message: "Username already exists",
+    };
   }
 
   const existingEmail = await User.findOne({ email: data.email });
   if (existingEmail) {
     throw {
-      field : "email",
-      message: "Email already exists"
-    }
+      field: "email",
+      message: "Email already exists",
+    };
   }
 
   const existingPhone = await User.findOne({ phone: data.phone });
   if (existingPhone) {
     throw {
-      field : "phone",
-      message : "Phone already exists"
-    }
+      field: "phone",
+      message: "Phone already exists",
+    };
   }
 
   const hashed = await hashPassword(data.password);
@@ -154,6 +155,23 @@ export const updateProfile = async (
 };
 
 export const getUserStats = async () => {
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const currentMonthUsers = await User.countDocuments({
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthUsers = await User.countDocuments({
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
   const totalUser = await User.countDocuments();
   const activeUser = await User.countDocuments({
     status: "active",
@@ -165,6 +183,7 @@ export const getUserStats = async () => {
   return {
     totalUser,
     activeUser,
-    inactiveUser, 
+    inactiveUser,
+    userGrowth: calculateTrend(currentMonthUsers, previousMonthUsers),
   };
 };
