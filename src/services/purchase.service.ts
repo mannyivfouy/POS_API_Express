@@ -98,7 +98,16 @@ export const getPurchases = async (query: any) => {
     query,
     searchFields: ["invoiceNo", "paymentStatus", "note"],
     allowedFilters: ["paymentStatus"],
-    populate: "createdBy"
+    populate: [
+      {
+        path: "supplierId",
+        select: "name contactPerson",
+      },
+      {
+        path: "createdBy",
+        select: "username fullname",
+      },
+    ],
   });
 };
 
