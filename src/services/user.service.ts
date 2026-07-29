@@ -156,9 +156,12 @@ export const updateProfile = async (
 
 export const getUserStats = async () => {
   const now = new Date();
+
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
   const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
+  // Total users created this month
   const currentMonthUsers = await User.countDocuments({
     createdAt: {
       $gte: currentMonthStart,
@@ -172,10 +175,44 @@ export const getUserStats = async () => {
     },
   });
 
+  // Active users created this month
+  const currentMonthActiveUsers = await User.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthActiveUsers = await User.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
+  // Inactive users created this month
+  const currentMonthInactiveUsers = await User.countDocuments({
+    status: "inactive",
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthInactiveUsers = await User.countDocuments({
+    status: "inactive",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
   const totalUser = await User.countDocuments();
+
   const activeUser = await User.countDocuments({
     status: "active",
   });
+
   const inactiveUser = await User.countDocuments({
     status: "inactive",
   });
@@ -184,6 +221,17 @@ export const getUserStats = async () => {
     totalUser,
     activeUser,
     inactiveUser,
-    userGrowth: calculateTrend(currentMonthUsers, previousMonthUsers),
+
+    totalUserTrend: calculateTrend(currentMonthUsers, previousMonthUsers),
+
+    activeUserTrend: calculateTrend(
+      currentMonthActiveUsers,
+      previousMonthActiveUsers,
+    ),
+
+    inactiveUserTrend: calculateTrend(
+      currentMonthInactiveUsers,
+      previousMonthInactiveUsers,
+    ),
   };
 };
