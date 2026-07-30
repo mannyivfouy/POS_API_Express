@@ -13,6 +13,10 @@ export const createPurchase = async (data: any) => {
       throw new Error("Supplier not found");
     }
 
+    if (supplier.status === 'inactive'){
+      throw new Error("Supplier inactive cannot make purchase");
+    }
+
     // 2. Check items
     if (!data.items || data.items.length === 0) {
       throw new Error("Purchase items are required");
