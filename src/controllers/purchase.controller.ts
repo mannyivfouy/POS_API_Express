@@ -47,3 +47,18 @@ export const getPurchaseById = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getPurchaseStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await purchaseService.getPurchaseStats();
+
+    return res.status(200).json({
+      message: "Purchase Stats Fetch Successfully",
+      data: stats,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};

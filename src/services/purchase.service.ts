@@ -4,6 +4,7 @@ import PurchaseItem from "../models/PurchaseItem";
 import Supplier from "../models/Supplier";
 import { generateInvoice } from "../utils/generateInvoiceNo";
 import { paginate } from "../utils/query";
+import { calculateTrend } from "../utils/trend";
 
 export const createPurchase = async (data: any) => {
   try {
@@ -13,7 +14,7 @@ export const createPurchase = async (data: any) => {
       throw new Error("Supplier not found");
     }
 
-    if (supplier.status === 'inactive'){
+    if (supplier.status === "inactive") {
       throw new Error("Supplier inactive cannot make purchase");
     }
 
@@ -129,4 +130,193 @@ export const getPurchaseById = async (id: string) => {
   );
 
   return { purchase, items };
+};
+
+export const getPurchaseStats = async () => {
+  const now = new Date();
+
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  // ===== ALL TIME STATS =====
+
+  const totalPurchase = await Purchase.countDocuments();
+
+  const purchaseAmountResult = await Purchase.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalAmount: {
+          $sum: "$total",
+        },
+      },
+    },
+  ]);
+
+  const totalPurchaseAmount = purchaseAmountResult[0]?.totalAmount || 0;
+
+  const purchaseItemsResult = await PurchaseItem.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalItems: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  const totalPurchaseItems = purchaseItemsResult[0]?.totalItems || 0;
+
+  const totalAveragePurchase =
+    totalPurchase > 0 ? Math.round(totalPurchaseAmount / totalPurchase) : 0;
+
+  // ===== CURRENT MONTH =====
+
+  const currentPurchaseResult = await Purchase.aggregate([
+    {
+      $match: {
+        purchaseDate: {
+          $gte: currentMonthStart,
+          $lt: nextMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalPurchase: {
+          $sum: 1,
+        },
+        totalAmount: {
+          $sum: "$total",
+        },
+        averagePurchase: {
+          $avg: "$total",
+        },
+      },
+    },
+  ]);
+
+  const currentItemsResult = await PurchaseItem.aggregate([
+    {
+      $lookup: {
+        from: "purchases",
+        localField: "purchaseId",
+        foreignField: "_id",
+        as: "purchase",
+      },
+    },
+    {
+      $unwind: "$purchase",
+    },
+    {
+      $match: {
+        "purchase.purchaseDate": {
+          $gte: currentMonthStart,
+          $lt: nextMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalItems: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  // ===== PREVIOUS MONTH =====
+
+  const previousPurchaseResult = await Purchase.aggregate([
+    {
+      $match: {
+        purchaseDate: {
+          $gte: previousMonthStart,
+          $lt: currentMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalPurchase: {
+          $sum: 1,
+        },
+        totalAmount: {
+          $sum: "$total",
+        },
+        averagePurchase: {
+          $avg: "$total",
+        },
+      },
+    },
+  ]);
+
+  const previousItemsResult = await PurchaseItem.aggregate([
+    {
+      $lookup: {
+        from: "purchases",
+        localField: "purchaseId",
+        foreignField: "_id",
+        as: "purchase",
+      },
+    },
+    {
+      $unwind: "$purchase",
+    },
+    {
+      $match: {
+        "purchase.purchaseDate": {
+          $gte: previousMonthStart,
+          $lt: currentMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalItems: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  const currentPurchase = currentPurchaseResult[0] || {};
+
+  const previousPurchase = previousPurchaseResult[0] || {};
+
+  const currentItems = currentItemsResult[0]?.totalItems || 0;
+
+  const previousItems = previousItemsResult[0]?.totalItems || 0;
+
+  return {
+    totalPurchase,
+    totalPurchaseAmount,
+    totalPurchaseItems,
+    totalAveragePurchase,
+
+    totalPurchaseTrend: calculateTrend(
+      currentPurchase.totalPurchase || 0,
+      previousPurchase.totalPurchase || 0,
+    ),
+
+    totalPurchaseAmountTrend: calculateTrend(
+      currentPurchase.totalAmount || 0,
+      previousPurchase.totalAmount || 0,
+    ),
+
+    totalPurchaseItemsTrend: calculateTrend(currentItems, previousItems),
+
+    totalAveragePurchaseTrend: calculateTrend(
+      Math.round(currentPurchase.averagePurchase || 0),
+      Math.round(previousPurchase.averagePurchase || 0),
+    ),
+  };
 };
