@@ -161,10 +161,13 @@ export const getUserStats = async () => {
 
   const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
   // Total users created this month
   const currentMonthUsers = await User.countDocuments({
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
@@ -180,6 +183,7 @@ export const getUserStats = async () => {
     status: "active",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
@@ -196,6 +200,7 @@ export const getUserStats = async () => {
     status: "inactive",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 

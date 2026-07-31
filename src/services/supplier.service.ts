@@ -67,6 +67,7 @@ export const getSupplierStats = async () => {
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   const totalSupplier = await Supplier.countDocuments();
   const activeSupplier = await Supplier.countDocuments({
@@ -80,6 +81,7 @@ export const getSupplierStats = async () => {
   const currentMonthSuppliers = await Supplier.countDocuments({
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
@@ -95,6 +97,7 @@ export const getSupplierStats = async () => {
     status: "active",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
@@ -111,6 +114,7 @@ export const getSupplierStats = async () => {
     status: "inactive",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
