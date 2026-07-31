@@ -1,6 +1,7 @@
 import Category from "../models/Category";
 import Product from "../models/Product";
 import { paginate } from "../utils/query";
+import { calculateTrend } from "../utils/trend";
 
 export const createCategory = async (data: any) => {
   const existingCategory = await Category.findOne({ name: data.name });
@@ -58,7 +59,7 @@ export const deleteCategory = async (id: string) => {
   if (!category) {
     throw {
       status: 404,
-      message: "Category Not Found"
+      message: "Category Not Found",
     };
   }
 
@@ -79,6 +80,10 @@ export const deleteCategory = async (id: string) => {
 };
 
 export const getCategoryStats = async () => {
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
   const totalCategory = await Category.countDocuments();
   const activeCategory = await Category.countDocuments({
     status: "active",
@@ -87,9 +92,69 @@ export const getCategoryStats = async () => {
     status: "inactive",
   });
 
+  // Total Categorys created this month
+  const currentMonthCategories = await Category.countDocuments({
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthCategories = await Category.countDocuments({
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
+  // Active Categorys created this month
+  const currentMonthActiveCategories = await Category.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthActiveCategories = await Category.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
+  // Inactive Categorys created this month
+  const currentMonthInactiveCategories = await Category.countDocuments({
+    status: "inactive",
+    createdAt: {
+      $gte: currentMonthStart,
+    },
+  });
+
+  const previousMonthInactiveCategories = await Category.countDocuments({
+    status: "inactive",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
   return {
     totalCategory,
     activeCategory,
     inactiveCategory,
+    totalCategoryTrend: calculateTrend(
+      currentMonthCategories,
+      previousMonthCategories,
+    ),
+
+    activeCategoryTrend: calculateTrend(
+      currentMonthActiveCategories,
+      previousMonthActiveCategories,
+    ),
+
+    inactiveCategoryTrend: calculateTrend(
+      currentMonthInactiveCategories,
+      previousMonthInactiveCategories,
+    ),
   };
 };
