@@ -83,6 +83,7 @@ export const getCategoryStats = async () => {
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   const totalCategory = await Category.countDocuments();
   const activeCategory = await Category.countDocuments({
@@ -96,13 +97,14 @@ export const getCategoryStats = async () => {
   const currentMonthCategories = await Category.countDocuments({
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
   const previousMonthCategories = await Category.countDocuments({
     createdAt: {
-      $gte: previousMonthStart,
-      $lt: currentMonthStart,
+      $gte: previousMonthStart,      
+      $lt: nextMonthStart,
     },
   });
 
@@ -111,6 +113,7 @@ export const getCategoryStats = async () => {
     status: "active",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
@@ -127,6 +130,7 @@ export const getCategoryStats = async () => {
     status: "inactive",
     createdAt: {
       $gte: currentMonthStart,
+      $lt: nextMonthStart,
     },
   });
 
