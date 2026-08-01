@@ -3,10 +3,20 @@ export const calculateTrend = (
   previous: number,
   label = "Compared to last month",
 ) => {
-  if (previous === 0) {
+  // No activity in either month
+  if (previous === 0 && current === 0) {
     return {
       value: 0,
       direction: "neutral",
+      label,
+    };
+  }
+
+  // New activity this month
+  if (previous === 0) {
+    return {
+      value: 100,
+      direction: "up",
       label,
     };
   }
