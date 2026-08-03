@@ -5,6 +5,7 @@ import Customer from "../models/Customer";
 import { generateInvoice } from "../utils/generateInvoiceNo";
 import { sendTelegramMessage } from "./telegram.service";
 import { paginate } from "../utils/query";
+import { calculateTrend } from "../utils/trend";
 
 export const createSale = async (data: any) => {
   try {
@@ -160,4 +161,193 @@ export const getSaleById = async (id: string) => {
   }).populate("productId", "name barcode sellingPrice image unit");
 
   return { sale, items };
+};
+
+export const getSaleStats = async () => {
+  const now = new Date();
+
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  // ===== ALL TIME STATS =====
+
+  const totalSales = await Sale.countDocuments();
+
+  const salesRevenueResult = await Sale.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalRevenue: {
+          $sum: "$total",
+        },
+      },
+    },
+  ]);
+
+  const totalSalesRevenue = salesRevenueResult[0]?.totalRevenue || 0;
+
+  const productsSoldResult = await SaleItem.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalProducts: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  const totalProductsSold = productsSoldResult[0]?.totalProducts || 0;
+
+  const totalAverageSale =
+    totalSales > 0 ? Math.round(totalSalesRevenue / totalSales) : 0;
+
+  // ===== CURRENT MONTH =====
+
+  const currentSalesResult = await Sale.aggregate([
+    {
+      $match: {
+        saleDate: {
+          $gte: currentMonthStart,
+          $lt: nextMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: {
+          $sum: 1,
+        },
+        totalRevenue: {
+          $sum: "$total",
+        },
+        averageSale: {
+          $avg: "$total",
+        },
+      },
+    },
+  ]);
+
+  const currentProductsResult = await SaleItem.aggregate([
+    {
+      $lookup: {
+        from: "sales",
+        localField: "saleId",
+        foreignField: "_id",
+        as: "sale",
+      },
+    },
+    {
+      $unwind: "$sale",
+    },
+    {
+      $match: {
+        "sale.saleDate": {
+          $gte: currentMonthStart,
+          $lt: nextMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalProducts: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  // ===== PREVIOUS MONTH =====
+
+  const previousSalesResult = await Sale.aggregate([
+    {
+      $match: {
+        saleDate: {
+          $gte: previousMonthStart,
+          $lt: currentMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: {
+          $sum: 1,
+        },
+        totalRevenue: {
+          $sum: "$total",
+        },
+        averageSale: {
+          $avg: "$total",
+        },
+      },
+    },
+  ]);
+
+  const previousProductsResult = await SaleItem.aggregate([
+    {
+      $lookup: {
+        from: "sales",
+        localField: "saleId",
+        foreignField: "_id",
+        as: "sale",
+      },
+    },
+    {
+      $unwind: "$sale",
+    },
+    {
+      $match: {
+        "sale.saleDate": {
+          $gte: previousMonthStart,
+          $lt: currentMonthStart,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalProducts: {
+          $sum: "$quantity",
+        },
+      },
+    },
+  ]);
+
+  const currentSales = currentSalesResult[0] || {};
+
+  const previousSales = previousSalesResult[0] || {};
+
+  const currentProducts = currentProductsResult[0]?.totalProducts || 0;
+
+  const previousProducts = previousProductsResult[0]?.totalProducts || 0;
+
+  return {
+    totalSales,
+    totalSalesRevenue,
+    totalProductsSold,
+    totalAverageSale,
+
+    totalSalesTrend: calculateTrend(
+      currentSales.totalSales || 0,
+      previousSales.totalSales || 0,
+    ),
+
+    totalSalesRevenueTrend: calculateTrend(
+      currentSales.totalRevenue || 0,
+      previousSales.totalRevenue || 0,
+    ),
+
+    totalProductsSoldTrend: calculateTrend(currentProducts, previousProducts),
+
+    totalAverageSaleTrend: calculateTrend(
+      Math.round(currentSales.averageSale || 0),
+      Math.round(previousSales.averageSale || 0),
+    ),
+  };
 };

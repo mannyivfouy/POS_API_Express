@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as saleService from "../services/sale.service";
 
-export const createSale = async (req: Request, res: Response) => {  
+export const createSale = async (req: Request, res: Response) => {
   try {
     const result = await saleService.createSale(req.body);
 
@@ -38,6 +38,21 @@ export const getSaleById = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Sale Fetch Successfully",
       data: sale,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+export const getSaleStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await saleService.getSaleStats();
+
+    return res.status(200).json({
+      message: "Sale Stats Fetch Successfully",
+      data: stats,
     });
   } catch (err: any) {
     return res.status(400).json({
