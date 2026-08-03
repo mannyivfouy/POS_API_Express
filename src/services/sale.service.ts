@@ -133,12 +133,23 @@ export const getSales = async (query: any) => {
     query,
     searchFields: ["invoiceNo", "paymentStatus", "note"],
     allowedFilters: ["paymentStatus"],
-    populate:["createdBy"],
-  })
+    populate: [
+      {
+        path: "createdBy",
+        select: "fullname",
+      },
+      {
+        path: "customerId",
+        select: "name phone",
+      },
+    ],
+  });
 };
 
 export const getSaleById = async (id: string) => {
-  const sale = await Sale.findById(id);
+  const sale = await Sale.findById(id)
+    .populate("createdBy", "fullname")
+    .populate("customerId", "name phone");
 
   if (!sale) {
     throw new Error("Sale Not Found");
@@ -146,7 +157,7 @@ export const getSaleById = async (id: string) => {
 
   const items = await SaleItem.find({
     saleId: id,
-  }).populate("productId");
+  }).populate("productId", "name barcode sellingPrice image unit");
 
   return { sale, items };
 };
