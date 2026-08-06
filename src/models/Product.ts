@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IProduct extends Document {
   name: string;
   barcode: string;
+  sku: string;
   costPrice: number;
   sellingPrice: number;
   stockQty: number;
@@ -25,9 +26,15 @@ const ProductSchema: Schema = new Schema(
       sparse: true,
       unique: true,
     },
-    costPrice: { type: Number, required: true },
-    sellingPrice: { type: Number, required: true },
-    stockQty: { type: Number, required: true, default: 0 },
+    sku: { 
+      type: String, 
+      required: true, 
+      trim: true ,
+      unique: true,
+    },
+    costPrice: { type: Number, default: 0 },
+    sellingPrice: { type: Number, default: 0 },
+    stockQty: { type: Number,  default: 0 },
     lowStockAlert: { type: Number, required: true, default: 10 },
     unit: { type: String, required: true, trim: true },
     description: { type: String },
