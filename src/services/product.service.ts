@@ -2,9 +2,37 @@ import Product from "../models/Product";
 import Category from "../models/Category";
 import { deleteFile, moveFile } from "../utils/file";
 import { paginate } from "../utils/query";
+import Supplier from "../models/Supplier";
 
 export const createProduct = async (data: any) => {
   const category = await Category.findById(data.categoryId);
+  const supplier = await Supplier.findById(data.supplierId);  
+
+  if (data.barcode) {
+    const existingBarcode = await Product.findOne({
+      barcode: data.barcode,
+    });
+
+    if (existingBarcode) {
+      throw {
+        field: "barcode",
+        message: "Barcode already exists",
+      };
+    }
+  }
+
+  if (data.sku) {
+    const existingSku = await Product.findOne({
+      sku : data.sku
+    })
+
+    if(existingSku) {
+      throw {
+        field: "sku",
+        message: "SKU already exists"
+      }
+    }
+  }
 
   if (!category) {
     throw new Error("Category Not Found");
@@ -14,17 +42,12 @@ export const createProduct = async (data: any) => {
     throw new Error("Cannot Create Product In An Inactive Category");
   }
 
-  if (data.barcode) {
-    const existingProduct = await Product.findOne({
-      barcode: data.barcode,
-    });
+  if (!supplier) {
+    throw new Error("Suppler Not Found");    
+  }
 
-    if (existingProduct) {
-      throw {
-        field: "barcode",
-        message: "Barcode already exists",
-      };
-    }
+  if (supplier.status === 'inactive'){
+    throw new Error("Cannot Create Product In An Inactive Supplier")
   }
 
   const product = await Product.create(data);
