@@ -3,10 +3,11 @@ import Category from "../models/Category";
 import { deleteFile, moveFile } from "../utils/file";
 import { paginate } from "../utils/query";
 import Supplier from "../models/Supplier";
+import { calculateTrend } from "../utils/trend";
 
 export const createProduct = async (data: any) => {
   const category = await Category.findById(data.categoryId);
-  const supplier = await Supplier.findById(data.supplierId);  
+  const supplier = await Supplier.findById(data.supplierId);
 
   if (data.barcode) {
     const existingBarcode = await Product.findOne({
@@ -23,14 +24,14 @@ export const createProduct = async (data: any) => {
 
   if (data.sku) {
     const existingSku = await Product.findOne({
-      sku : data.sku
-    })
+      sku: data.sku,
+    });
 
-    if(existingSku) {
+    if (existingSku) {
       throw {
         field: "sku",
-        message: "SKU already exists"
-      }
+        message: "SKU already exists",
+      };
     }
   }
 
@@ -43,11 +44,11 @@ export const createProduct = async (data: any) => {
   }
 
   if (!supplier) {
-    throw new Error("Suppler Not Found");    
+    throw new Error("Suppler Not Found");
   }
 
-  if (supplier.status === 'inactive'){
-    throw new Error("Cannot Create Product In An Inactive Supplier")
+  if (supplier.status === "inactive") {
+    throw new Error("Cannot Create Product In An Inactive Supplier");
   }
 
   const product = await Product.create(data);
@@ -143,6 +144,12 @@ export const deleteProduct = async (id: string) => {
 };
 
 export const getProductStats = async () => {
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  // Count
   const totalProduct = await Product.countDocuments();
   const activeProduct = await Product.countDocuments({
     status: "active",
@@ -151,9 +158,70 @@ export const getProductStats = async () => {
     status: "inactive",
   });
 
+  // Total products created this month
+  const currentMonthProducts = await Product.countDocuments({
+    createdAt: {
+      $gte: currentMonthStart,
+      $lt: nextMonthStart,
+    },
+  });
+
+  const previousMonthProducts = await Product.countDocuments({
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: nextMonthStart,
+    },
+  });
+
+  // Active products this month
+  const currentMonthActiveProducts = await Product.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: currentMonthStart,
+      $lt: nextMonthStart,
+    },
+  });
+
+  const previousMonthActiveProducts = await Product.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
+  // Inactive products this month
+  const currentMonthInactiveProducts = await Product.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: currentMonthStart,
+      $lt: nextMonthStart,
+    },
+  });
+
+  const previousMonthInactiveProducts = await Product.countDocuments({
+    status: "active",
+    createdAt: {
+      $gte: previousMonthStart,
+      $lt: currentMonthStart,
+    },
+  });
+
   return {
     totalProduct,
     activeProduct,
     inactiveProduct,
+    totalProductTrend: calculateTrend(
+      currentMonthProducts,
+      previousMonthProducts,
+    ),
+    activeProductTrend: calculateTrend(
+      currentMonthActiveProducts,
+      previousMonthActiveProducts,
+    ),
+    inactiveProductTrend: calculateTrend(
+      currentMonthInactiveProducts,
+      previousMonthInactiveProducts,
+    ),
   };
 };
