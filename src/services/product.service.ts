@@ -225,3 +225,11 @@ export const getProductStats = async () => {
     ),
   };
 };
+
+export const getLowStockProduct = async () => {
+  return Product.find({
+    $expr: {
+      $lte: ["$stockQty", "$lowStockAlert"],
+    },
+  });
+};

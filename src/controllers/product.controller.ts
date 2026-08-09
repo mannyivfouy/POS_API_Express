@@ -102,3 +102,18 @@ export const getProductStats = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getLowStockProduct = async (req: Request, res: Response) => {
+  try{
+    const product = await productService.getLowStockProduct()
+
+    return res.status(200).json({
+      message: "Low Stock Product Fetch Successfully",
+      data: product
+    })
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message
+    })
+  }
+}
