@@ -40,7 +40,7 @@ export const updateCategory = async (id: string, data: any) => {
   const category = await Category.findByIdAndUpdate(id, data, { new: true });
 
   if (!category) {
-    throw new Error("Catgory Not Found");
+    throw new Error("Category Not Found");
   }
 
   if (data.status) {
@@ -70,7 +70,7 @@ export const deleteCategory = async (id: string) => {
       status: 409,
       field: "category",
       message:
-        "Cannot Delete Category Because It Is Assing To One or More Products",
+        "Cannot Delete Category Because It Is Assign To One or More Products",
     };
   }
 
@@ -103,7 +103,7 @@ export const getCategoryStats = async () => {
 
   const previousMonthCategories = await Category.countDocuments({
     createdAt: {
-      $gte: previousMonthStart,      
+      $gte: previousMonthStart,
       $lt: nextMonthStart,
     },
   });
@@ -161,4 +161,49 @@ export const getCategoryStats = async () => {
       previousMonthInactiveCategories,
     ),
   };
+};
+
+export const getSaleCategories = async () => {
+  return await Category.aggregate([
+    {
+      $match: {
+        status: "active",
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        let: {
+          categoryId: "$_id",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$categoryId", "$$categoryId"],
+              },
+              status: "active",
+            },
+          },
+        ],
+        as: "products",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        icon: 1,
+
+        activeProductCount: {
+          $size: "$products",
+        },
+      },
+    },
+    {
+      $sort: {
+        name: 1,
+      },
+    },
+  ]);
 };
