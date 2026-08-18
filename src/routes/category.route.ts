@@ -20,6 +20,13 @@ router.get(
 );
 
 router.get(
+  "/sale",
+  authMiddleware,
+  authorize("Admin", "Cashier"),
+  categoryController.getSaleCategories,
+);
+
+router.get(
   "/stats",
   authMiddleware,
   authorize("Admin", "Manager", "Cashier"),
