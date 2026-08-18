@@ -18,12 +18,43 @@ export const createCategory = async (data: any) => {
 };
 
 export const getCategories = async (query: any) => {
-  return paginate({
+  const result = await paginate({
     model: Category,
     query,
     searchFields: ["name", "description"],
     allowedFilters: ["status"],
   });
+
+  const categoryIds = result.data.map((category: any) => category._id);
+
+  const productCounts = await Product.aggregate([
+    {
+      $match: {
+        categoryId: { $in: categoryIds },
+        status: "active",
+      },
+    },
+    {
+      $group: {
+        _id: "$categoryId",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const countMap = new Map(
+    productCounts.map((item: any) => [
+      item._id.toString(),
+      item.count,
+    ])
+  );
+
+  result.data = result.data.map((category: any) => ({
+    ...category.toObject(),
+    activeProductCount: countMap.get(category._id.toString()) || 0,
+  }));
+
+  return result;
 };
 
 export const getCategoryById = async (id: string) => {
@@ -163,47 +194,3 @@ export const getCategoryStats = async () => {
   };
 };
 
-export const getSaleCategories = async () => {
-  return await Category.aggregate([
-    {
-      $match: {
-        status: "active",
-      },
-    },
-    {
-      $lookup: {
-        from: "products",
-        let: {
-          categoryId: "$_id",
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $eq: ["$categoryId", "$$categoryId"],
-              },
-              status: "active",
-            },
-          },
-        ],
-        as: "products",
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        icon: 1,
-
-        activeProductCount: {
-          $size: "$products",
-        },
-      },
-    },
-    {
-      $sort: {
-        name: 1,
-      },
-    },
-  ]);
-};

@@ -19,12 +19,6 @@ router.get(
   categoryController.getCategories,
 );
 
-router.get(
-  "/sale",
-  authMiddleware,
-  authorize("Admin", "Cashier"),
-  categoryController.getSaleCategories,
-);
 
 router.get(
   "/stats",
