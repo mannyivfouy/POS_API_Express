@@ -98,17 +98,3 @@ export const getCategoryStats = async (req: Request, res: Response) => {
   }
 };
 
-export const getSaleCategories = async (req: Request, res: Response) => {
-  try {
-    const categories = await categoryService.getSaleCategories();
-
-    return res.status(200).json({
-      message: "Sale Category Fetch Successfully",
-      data: categories,
-    });
-  } catch (err: any) {
-    return res.status(500).json({
-      message: err.message,
-    });
-  }
-};
