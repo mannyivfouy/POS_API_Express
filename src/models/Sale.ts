@@ -2,13 +2,16 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface ISale extends Document {
   invoiceNo: string;
-  customerId: Types.ObjectId;
+  customerId: Types.ObjectId | null;
   saleDate: Date;
   subtotal: number;
   discount: number;
   tax: number;
   total: number;
-  paymentStatus: string;
+  paymentStatus: "pending" | "paid" | "expired" | "failed";
+  paymentMethod: "cash" | "bakongKHQR";
+  paymentReference?: string;
+  paymentExpiresAt?: Date;
   note?: string;
   createdBy: Types.ObjectId;
 }
@@ -24,8 +27,19 @@ const SaleSchema: Schema = new Schema(
     total: { type: Number, required: true, default: 0 },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid"],
+      enum: ["pending" , "paid" , "expired" , "failed"],
       default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "bakongKHQR"],
+      required: true,
+    },
+    paymentReference: {
+      type: String,
+    },
+    paymentExpiresAt: {
+      type: Date,
     },
     note: { type: String },
     createdBy: {

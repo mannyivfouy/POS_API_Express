@@ -11,6 +11,7 @@ import productRoute from "./routes/product.route";
 import customerRoute from "./routes/customer.route";
 import purchaseRouter from "./routes/purchase.route";
 import saleRoute from "./routes/sale.route";
+import paymentRoute from "./routes/payment.route";
 
 const app = express();
 
@@ -37,7 +38,7 @@ app.use("/api/suppliers", supplierRoute);
 // Product Route
 app.use("/api/products", productRoute);
 
-// Cusomer Route
+// Customer Route
 app.use("/api/customers", customerRoute);
 
 // Purchase Route
@@ -45,5 +46,8 @@ app.use("/api/purchases", purchaseRouter);
 
 // Sale Route
 app.use("/api/sales", saleRoute);
+
+// Payment Route
+app.use("/api/payments", paymentRoute)
 
 export default app;
