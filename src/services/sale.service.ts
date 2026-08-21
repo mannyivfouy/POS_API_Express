@@ -83,6 +83,10 @@ export const preparedSalePayment = async (data: any) => {
 
 export const completeSale = async (data: any, md5: string) => {
   try {
+    if (!data.invoiceNo) {
+      throw new Error("Invoice Number Is Required");
+    }
+
     // Validate Items
     if (!data.items || data.items.length === 0) {
       throw new Error("Sale Items Are Required");
@@ -93,21 +97,21 @@ export const completeSale = async (data: any, md5: string) => {
 
     // Create Sale Header
     const sale = await Sale.create({
-  invoiceNo: data.invoiceNo,
-  customerId: data.customerId || null,
-  saleDate: new Date(),
+      invoiceNo: data.invoiceNo,
+      customerId: data.customerId || null,
+      saleDate: new Date(),
 
-  subtotal: Number(data.subtotal),
-  discount: Number(data.discount || 0),
-  tax: Number(data.tax || 0),
-  total: Number(data.total),
+      subtotal: Number(data.subtotal),
+      discount: Number(data.discount || 0),
+      tax: Number(data.tax || 0),
+      total: Number(data.total),
 
-  paymentMethod: "bakongKHQR",
-  paymentStatus: "paid",
+      paymentMethod: "bakongKHQR",
+      paymentStatus: "paid",
 
-  note: data.note || "",
-  createdBy: data.createdBy,
-});
+      note: data.note || "",
+      createdBy: data.createdBy,
+    });
 
     const itemLines: {
       name: string;
