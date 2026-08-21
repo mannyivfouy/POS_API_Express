@@ -6,6 +6,188 @@ import { generateInvoice } from "../utils/generateInvoiceNo";
 import { sendTelegramMessage } from "./telegram.service";
 import { paginate } from "../utils/query";
 import { calculateTrend } from "../utils/trend";
+import { createBakongPayment, checkBakongPayment } from "./payment.service";
+
+export const preparedSalePayment = async (data: any) => {
+  try {
+    if (!data.items || data.items.length === 0) {
+      throw new Error("Sale Items Are Required");
+    }
+
+    let customerId = data.customerId || null;
+
+    if (!customerId && data.customer) {
+      const newCustomer = await Customer.create({
+        name: data.customer.name || "Walk-in Customer",
+        phone: data.customer.phone || "",
+      });
+
+      customerId = newCustomer._id;
+    }
+
+    let subtotal = 0;
+
+    for (const item of data.items) {
+      const product = await Product.findById(item.productId);
+
+      if (!product) {
+        throw new Error(`Product Not Found : ${item.productId}`);
+      }
+
+      const quantity = Number(item.quantity);
+      const sellingPrice = Number(item.sellingPrice);
+
+      if (quantity <= 0) {
+        throw new Error("Quantity Must Be Greater Than 0");
+      }
+
+      if (product.stockQty < quantity) {
+        throw new Error(
+          `Not Enough Stock For ${product.name}. Available Only ${product.stockQty}`,
+        );
+      }
+
+      subtotal += quantity * sellingPrice;
+    }
+
+    const discount = Number(data.discount || 0);
+    const tax = Number(data.tax || 0);
+
+    const total = subtotal - discount + tax;
+
+    if (total <= 0) {
+      throw new Error("Sale Total Must Be Greater Than 0");
+    }
+
+    // Generate Invoice
+    const invoiceNo = await generateInvoice("sale");
+
+    // Generate Bakong KHQR
+    const payment = await createBakongPayment(total, invoiceNo);
+
+    return {
+      invoiceNo,
+      customerId,
+      items: data.items,
+      subtotal,
+      discount,
+      tax,
+      total,
+      qr: payment.qr,
+      md5: payment.md5,
+    };
+  } catch (err: any) {
+    throw new Error(err.message);
+  }
+};
+
+export const completeSale = async (data: any, md5: string) => {
+  try {
+    // Validate Items
+    if (!data.items || data.items.length === 0) {
+      throw new Error("Sale Items Are Required");
+    }
+
+    // Verify Bakong Payment
+    await checkBakongPayment(md5, Number(data.total));
+
+    // Create Sale Header
+    const sale = await Sale.create({
+  invoiceNo: data.invoiceNo,
+  customerId: data.customerId || null,
+  saleDate: new Date(),
+
+  subtotal: Number(data.subtotal),
+  discount: Number(data.discount || 0),
+  tax: Number(data.tax || 0),
+  total: Number(data.total),
+
+  paymentMethod: "bakongKHQR",
+  paymentStatus: "paid",
+
+  note: data.note || "",
+  createdBy: data.createdBy,
+});
+
+    const itemLines: {
+      name: string;
+      quantity: number;
+      total: number;
+    }[] = [];
+
+    // Create Sale Items & Reduce Stock
+    for (const item of data.items) {
+      const product = await Product.findById(item.productId);
+
+      if (!product) {
+        throw new Error(`Product Not Found: ${item.productId}`);
+      }
+
+      const quantity = Number(item.quantity);
+      const sellingPrice = Number(item.sellingPrice);
+
+      // Check stock again
+      if (product.stockQty < quantity) {
+        throw new Error(
+          `Not Enough Stock For ${product.name}. Available Only ${product.stockQty}`,
+        );
+      }
+
+      const lineTotal = quantity * sellingPrice;
+
+      itemLines.push({
+        name: product.name,
+        quantity,
+        total: lineTotal,
+      });
+
+      // Create Sale Item
+      await SaleItem.create({
+        saleId: sale._id,
+        productId: product._id,
+        quantity,
+        sellingPrice,
+        total: lineTotal,
+      });
+
+      // Reduce Stock
+      product.stockQty -= quantity;
+      await product.save();
+    }
+
+    // Send Telegram Notification
+    await sendTelegramMessage(
+      `🟢 <b>NEW SALE CREATED</b>
+        ━━━━━━━━━━━━━━━━━━━━━━━
+
+        🧾 <b>Invoice:</b> ${sale.invoiceNo}
+        📅 <b>Date:</b> ${new Date().toLocaleString()}
+
+        📦 <b>Items:</b>
+        ${itemLines
+          .map(
+            (item) =>
+              `  • ${item.name} x${item.quantity} — $${item.total.toFixed(2)}`,
+          )
+          .join("\n")}
+
+        ━━━━━━━━━━━━━━━━━━━━━━━
+        💵 Subtotal:   $${sale.subtotal.toFixed(2)}
+        📉 Discount:   $${sale.discount.toFixed(2)}
+        🧾 Tax:        $${sale.tax.toFixed(2)}
+        💰 <b>Total:     $${sale.total.toFixed(2)}</b>
+
+        💳 <b>Payment:</b> ✅ Paid
+
+        ━━━━━━━━━━━━━━━━━━━━━━━
+      `,
+    );
+
+    return sale;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
 
 export const createSale = async (data: any) => {
   try {

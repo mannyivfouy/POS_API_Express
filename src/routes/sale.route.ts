@@ -6,6 +6,18 @@ import { authorize } from "../middlewares/role.middleware";
 const router = express.Router();
 
 router.post(
+  "/prepare-payment",
+  authMiddleware,
+  saleController.preparedSalePayment,
+);
+
+router.post(
+  "/complete",
+  authMiddleware,
+  saleController.completeSale,
+);
+
+router.post(
   "/create",
   authMiddleware,
   authorize("Admin", "Cashier"),
