@@ -13,5 +13,22 @@ export const createUploader = (folder: string) => {
     },
   });
 
-  return multer({ storage });
+  const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
+    const allowedMimeType = ["image/jpg", "image/jpeg"];
+
+    const allowedExtension = [".jpg", ".png"];
+
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    if (
+      allowedMimeType.includes(file.mimetype) &&
+      allowedExtension.includes(extension)
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PNG and JPG images are allowed"));
+    }
+  };
+
+  return multer({ storage, fileFilter });
 };
