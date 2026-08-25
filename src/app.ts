@@ -12,6 +12,7 @@ import customerRoute from "./routes/customer.route";
 import purchaseRouter from "./routes/purchase.route";
 import saleRoute from "./routes/sale.route";
 import paymentRoute from "./routes/payment.route";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 const app = express();
 
@@ -49,5 +50,7 @@ app.use("/api/sales", saleRoute);
 
 // Payment Route
 app.use("/api/payments", paymentRoute)
+
+app.use(errorMiddleware);
 
 export default app;
