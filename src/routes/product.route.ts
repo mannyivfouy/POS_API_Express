@@ -5,7 +5,7 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/role.middleware";
 
 const router = express.Router();
-const uploadtemp = createUploader("temp");
+const uploadtemp = createUploader("temp", "image");
 
 router.post(
   "/create",

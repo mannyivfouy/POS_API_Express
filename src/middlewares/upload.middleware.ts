@@ -1,10 +1,10 @@
 import multer from "multer";
 import path from "path";
 
-export const createUploader = (folder: string) => {
+export const createUploader = (folder: string, fieldName: string) => {
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, `uploads/temp`);
+      cb(null, `uploads/${folder}`);
     },
 
     filename: (req, file, cb) => {
@@ -26,9 +26,12 @@ export const createUploader = (folder: string) => {
     ) {
       cb(null, true);
     } else {
-      cb(new Error("Only PNG and JPG images are allowed"));
+      const error = new Error("Only JPG and PNG are allowed");
+      (((error as any).status = 400), ((error as any).field = fieldName));
+
+      cb(error);
     }
   };
 
-  return multer({ storage, fileFilter });
+  return multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 };

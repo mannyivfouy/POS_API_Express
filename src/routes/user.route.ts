@@ -7,7 +7,7 @@ import { updateProfile } from "./../services/user.service";
 
 const router = express.Router();
 
-const uploadtemp = createUploader("temp");
+const uploadtemp = createUploader("temp", "avatar");
 
 router.post(
   "/create",
