@@ -1,17 +1,24 @@
 import { Request, Response } from "express";
 import * as purchaseService from "../services/purchase.service";
 
-export const createPurchase = async (req: Request, res: Response) => {
+export const createPurchase = async (req: any, res: any) => {
   try {
-    const result = await purchaseService.createPurchase(req.body);
+    const purchaseData = {
+      ...req.body,
+      createdBy: req.user._id,
+    };
+
+    const purchase = await purchaseService.createPurchase(purchaseData);
 
     return res.status(201).json({
-      message: "Purchase Created Successfully",
-      data: result,
+      message: "Purchase created successfully",
+      data: purchase,
     });
-  } catch (err: any) {
+  } catch (error: any) {
+    console.error("Create purchase error:", error);
+
     return res.status(400).json({
-      message: err.message,
+      message: error.message || "Failed to create purchase",
     });
   }
 };
