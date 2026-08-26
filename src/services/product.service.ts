@@ -61,7 +61,7 @@ export const getProducts = async (query: any) => {
     model: Product,
     query,
     searchFields: ["name", "description"],
-    allowedFilters: ["status", "categoryId"],
+    allowedFilters: ["status", "categoryId", "supplierId"],
     populate: ["categoryId", "supplierId"],
   });
 };
