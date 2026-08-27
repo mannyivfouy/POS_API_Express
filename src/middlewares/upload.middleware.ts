@@ -14,7 +14,7 @@ export const createUploader = (folder: string, fieldName: string) => {
   });
 
   const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
-    const allowedMimeType = ["image/jpg", "image/jpeg"];
+    const allowedMimeType = ["image/jpg", "image/png"];
 
     const allowedExtension = [".jpg", ".png"];
 
