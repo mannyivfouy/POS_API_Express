@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import RolePermission from "../models/Role-Permission";
+import { getRolePermissions } from "../services/permission.service";
 
 export const authMiddleware = async (req: any, res: any, next: any) => {
   try {
@@ -17,7 +19,21 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: "User Not Found" });
     }
 
-    req.user = user;
+    const roleId = user.roleId?._id;
+
+    if (!roleId) {
+      return res.status(403).json({
+        message: "Role Not Found",
+      });
+    }
+
+    const permissions = await getRolePermissions(roleId);
+
+    req.user = {
+      ...user.toObject(),
+      permissions,
+    };
+
     next();
   } catch (err: any) {
     return res.status(401).json({
