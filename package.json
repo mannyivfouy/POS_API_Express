@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec ts-node src/server.ts",
+    "seed": "tsx src/seeds/seed.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
@@ -36,6 +37,7 @@
     "@types/qrcode": "^1.5.6",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3"
   }
 }

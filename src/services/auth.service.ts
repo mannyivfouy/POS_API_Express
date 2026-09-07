@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import { getRolePermissions } from "../services/permission.service";
 
 export const login = async (username: string, password: string) => {
   const user = await User.findOne({ username }).populate("roleId");
@@ -19,9 +20,25 @@ export const login = async (username: string, password: string) => {
     throw new Error("Invalid Credentials");
   }
 
+  const roleId = user.roleId?._id;
+
+  if (!roleId) {
+    throw new Error("ROLE_NOT_FOUND");
+  }
+
+  const permissions = await getRolePermissions(roleId);
+
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
     expiresIn: "1d",
   });
 
-  return { token, user };
+  const { password: _, ...userResponse } = user.toObject();
+
+  return {
+    token,
+    user: {
+      ...userResponse,
+      permissions,
+    },
+  };
 };
