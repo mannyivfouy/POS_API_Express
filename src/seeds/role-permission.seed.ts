@@ -33,6 +33,11 @@ const rolePermissions = {
     "sale.create",
     "sale.cancel",
     "sale.refund",
+
+    "customer.view",
+    "customer.create",
+    "customer.update",
+    "customer.delete",
   ],
 
   Manager: [

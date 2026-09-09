@@ -152,6 +152,32 @@ const permissions = [
     action: "refund",
     description: "Refund sales",
   },
+
+  // Customer
+  {
+    name: "customer.create",
+    module: "customer",
+    action: "create",
+    description: "Create customer",
+  },
+  {
+    name: "customer.view",
+    module: "customer",
+    action: "view",
+    description: "View customers",
+  },
+  {
+    name: "customer.update",
+    module: "customer",
+    action: "update",
+    description: "Update customer",
+  },
+  {
+    name: "customer.delete",
+    module: "customer",
+    action: "delete",
+    description: "Delete customer",
+  },
 ];
 
 export const seedPermissions = async () => {
