@@ -73,8 +73,12 @@ export const preparedSalePayment = async (data: any) => {
       discount,
       tax,
       total,
+
       qr: payment.qr,
       md5: payment.md5,
+      amount: payment.amount,
+      currency: payment.currency,
+      expiresAt: payment.expiresAt
     };
   } catch (err: any) {
     throw new Error(err.message);

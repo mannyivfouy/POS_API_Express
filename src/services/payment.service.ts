@@ -13,6 +13,9 @@ export const createBakongPayment = async (
   return {
     qr: result.data.qr,
     md5: result.data.md5,
+    amount: result.data.amount,
+    currency: result.data.currency,
+    expiresAt: result.data.expiresAt
   };
 };
 
