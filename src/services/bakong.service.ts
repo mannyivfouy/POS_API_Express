@@ -24,7 +24,17 @@ class BakongService {
       },
     );
 
-    return this.khqr.generateMerchant(merchantInfo);
+    const payment = this.khqr.generateMerchant(merchantInfo);
+
+    return {
+      ...payment,
+      data: {
+        ...payment.data,
+        amount,
+        currency: "USD",
+        expiresAt: new Date(expirationTimestamp).toISOString(),
+      },
+    };
   }
 
   async checkPayment(md5: string) {
