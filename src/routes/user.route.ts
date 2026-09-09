@@ -2,7 +2,7 @@ import express from "express";
 import * as userController from "../controllers/user.controller";
 import { createUploader } from "../middlewares/upload.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { authorize } from "../middlewares/role.middleware";
+import { authorize } from "../middlewares/permission.middleware";
 import { updateProfile } from "./../services/user.service";
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const uploadtemp = createUploader("temp", "avatar");
 router.post(
   "/create",
   authMiddleware,
-  authorize("Admin"),
+  authorize("user.create"),
   uploadtemp.single("avatar"),
   userController.createUser,
 );
@@ -29,28 +29,28 @@ router.put(
 router.get(
   "/",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("user.view"),
   userController.getUsers,
 );
 
 router.get(
   "/stats",
   authMiddleware,
-  authorize("Admin"),
+  authorize("user.view"),
   userController.getUserStats,
 );
 
 router.get(
   "/:id",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("user.view"),
   userController.getUserById,
 );
 
 router.put(
   "/update/:id",
   authMiddleware,
-  authorize("Admin"),
+  authorize("user.update"),
   uploadtemp.single("avatar"),
   userController.updateUser,
 );
@@ -58,7 +58,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("Admin"),
+  authorize("user.delete"),
   userController.deleteUser,
 );
 

@@ -8,28 +8,28 @@ const router = express.Router();
 router.post(
   "/create",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("purchase.create"),
   purchaseController.createPurchase,
 );
 
 router.get(
   "/",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("purchase.view"),
   purchaseController.getPurchases,
 );
 
 router.get(
   "/stats",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("purchase.view"),
   purchaseController.getPurchaseStats,
 );
 
 router.get(
   "/:id",
   authMiddleware,
-  authorize("Admin", "Manager"),
+  authorize("purchase.view"),
   purchaseController.getPurchaseById,
 );
 
