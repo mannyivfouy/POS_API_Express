@@ -2,11 +2,23 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { getRolePermissions } from "../services/permission.service";
+import {
+  checkLoginBlocked,
+  recordFailedLogin,
+  resetLoginAttempt,
+} from "./login-attempt.service";
 
-export const login = async (username: string, password: string) => {
+export const login = async (username: string, password: string, ip: string) => {
+  const isBlocked = await checkLoginBlocked(ip, username);
+
+  if(isBlocked){
+    throw new Error("TOO_MANY_LOGIN_ATTEMPTS")
+  }
+
   const user = await User.findOne({ username }).populate("roleId");
 
-  if (!user) {
+  if (!user) {    
+    await recordFailedLogin(ip, username);
     throw new Error("Invalid Credentials");
   }
 
@@ -17,8 +29,11 @@ export const login = async (username: string, password: string) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
+    await recordFailedLogin(ip, username)
     throw new Error("Invalid Credentials");
   }
+
+  await resetLoginAttempt(ip, username)
 
   const roleId = user.roleId?._id;
 
