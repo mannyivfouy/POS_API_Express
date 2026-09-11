@@ -1,10 +1,9 @@
 import LoginAttempt from "../models/Login-Attempt";
 import { env } from "../configs/env";
 
-export const checkLoginBlocked = async (ip: string, username: string) => {
+export const checkLoginBlocked = async (ip: string) => {
   const loginAttempt = await LoginAttempt.findOne({
     ip,
-    username,
   });
 
   if (!loginAttempt) {
@@ -27,11 +26,10 @@ export const checkLoginBlocked = async (ip: string, username: string) => {
   return false;
 };
 
-export const recordFailedLogin = async (ip: string, username: string) => {
+export const recordFailedLogin = async (ip: string) => {
   const loginAttempt = await LoginAttempt.findOneAndUpdate(
     {
       ip,
-      username,
     },
     {
       $inc: {
@@ -51,12 +49,12 @@ export const recordFailedLogin = async (ip: string, username: string) => {
 
     await loginAttempt.save();
   }
+
   return loginAttempt;
 };
 
-export const resetLoginAttempt = async (ip: string, username: string) => {
+export const resetLoginAttempt = async (ip: string) => {
   await LoginAttempt.deleteOne({
     ip,
-    username,
   });
 };

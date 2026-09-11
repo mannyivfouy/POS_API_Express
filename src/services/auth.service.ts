@@ -9,7 +9,7 @@ import {
 } from "./login-attempt.service";
 
 export const login = async (username: string, password: string, ip: string) => {
-  const isBlocked = await checkLoginBlocked(ip, username);
+  const isBlocked = await checkLoginBlocked(ip);
 
   if(isBlocked){
     throw new Error("TOO_MANY_LOGIN_ATTEMPTS")
@@ -18,7 +18,7 @@ export const login = async (username: string, password: string, ip: string) => {
   const user = await User.findOne({ username }).populate("roleId");
 
   if (!user) {    
-    await recordFailedLogin(ip, username);
+    await recordFailedLogin(ip);
     throw new Error("Invalid Credentials");
   }
 
@@ -29,11 +29,11 @@ export const login = async (username: string, password: string, ip: string) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    await recordFailedLogin(ip, username)
+    await recordFailedLogin(ip)
     throw new Error("Invalid Credentials");
   }
 
-  await resetLoginAttempt(ip, username)
+  await resetLoginAttempt(ip)
 
   const roleId = user.roleId?._id;
 
