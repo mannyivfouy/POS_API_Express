@@ -169,7 +169,7 @@ export const getProductStats = async () => {
   const previousMonthProducts = await Product.countDocuments({
     createdAt: {
       $gte: previousMonthStart,
-      $lt: nextMonthStart,
+      $lt: currentMonthStart,
     },
   });
 
