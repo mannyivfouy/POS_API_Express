@@ -1,7 +1,7 @@
 import express from "express";
 import * as purchaseController from "../controllers/purchase.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { authorize } from "../middlewares/role.middleware";
+import { authorize } from "../middlewares/permission.middleware";
 
 const router = express.Router();
 
