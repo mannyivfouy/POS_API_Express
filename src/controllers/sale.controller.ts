@@ -48,14 +48,22 @@ export const completeSale = async (req: any, res: any) => {
   }
 };
 
-export const createSale = async (req: Request, res: Response) => {
+export const cancelSale = async (req: Request, res: Response) => {
   try {
-    const result = await saleService.createSale(req.body);
+    const { invoiceNo } = req.body;
 
-    return res.status(201).json({
-      message: "Sale Created Successfully",
-      data: result,
-    });
+    if (!invoiceNo) {
+      return res.status(400).json({
+        message: "Invoice Number Is Required",
+      });
+    }
+
+    const sale = await saleService.cancelSale(invoiceNo);
+
+    return res.status(200).json({
+      message: "Sale Cancelled Successfully",
+      data: sale
+    })
   } catch (err: any) {
     return res.status(400).json({
       message: err.message,
