@@ -8,7 +8,7 @@ export interface ISale extends Document {
   discount: number;
   tax: number;
   total: number;
-  paymentStatus: "pending" | "paid" | "expired" | "failed";
+  paymentStatus: "pending" | "paid" | "expired" | "failed" | "cancelled";
   paymentMethod: "cash" | "bakongKHQR";
   paymentReference?: string;
   paymentExpiresAt?: Date;
@@ -27,7 +27,7 @@ const SaleSchema: Schema = new Schema(
     total: { type: Number, required: true, default: 0 },
     paymentStatus: {
       type: String,
-      enum: ["pending" , "paid" , "expired" , "failed"],
+      enum: ["pending", "paid", "expired", "failed", "cancelled"],
       default: "pending",
     },
     paymentMethod: {

@@ -65,7 +65,28 @@ export const preparedSalePayment = async (data: any) => {
     // Generate Bakong KHQR
     const payment = await createBakongPayment(total, invoiceNo);
 
+    const sale = await Sale.create({
+      invoiceNo,
+      customerId,
+      saleDate: new Date(),
+
+      subtotal,
+      discount,
+      tax,
+      total,
+
+      paymentMethod: "bakongKHQR",
+      paymentStatus: "pending",
+
+      paymentReference: payment.md5,
+      paymentExpiresAt: payment.expiresAt,
+
+      note: data.note || "",
+      createdBy: data.createdBy,
+    });
+
     return {
+      saleId: sale._id,
       invoiceNo,
       customerId,
       items: data.items,
@@ -78,7 +99,7 @@ export const preparedSalePayment = async (data: any) => {
       md5: payment.md5,
       amount: payment.amount,
       currency: payment.currency,
-      expiresAt: payment.expiresAt
+      expiresAt: payment.expiresAt,
     };
   } catch (err: any) {
     throw new Error(err.message);
@@ -100,22 +121,26 @@ export const completeSale = async (data: any, md5: string) => {
     await checkBakongPayment(md5, Number(data.total));
 
     // Create Sale Header
-    const sale = await Sale.create({
+    const sale = await Sale.findOne({
       invoiceNo: data.invoiceNo,
-      customerId: data.customerId || null,
-      saleDate: new Date(),
-
-      subtotal: Number(data.subtotal),
-      discount: Number(data.discount || 0),
-      tax: Number(data.tax || 0),
-      total: Number(data.total),
-
-      paymentMethod: "bakongKHQR",
-      paymentStatus: "paid",
-
-      note: data.note || "",
-      createdBy: data.createdBy,
     });
+
+    // Check sale is existst
+    if (!sale) {
+      throw new Error("Pending Sale Not Found");
+    }
+
+    // Prevent completing a cancelled/expired/failed sale
+    if (sale.paymentStatus !== "pending") {
+      throw new Error(
+        `Cannot Complete Sale With ${sale.paymentStatus} Payment Status`,
+      );
+    }
+
+    // Mark existing Sale as paid
+    sale.paymentStatus = "paid";
+
+    await sale.save();
 
     const itemLines: {
       name: string;
@@ -197,120 +222,22 @@ export const completeSale = async (data: any, md5: string) => {
   }
 };
 
-export const createSale = async (data: any) => {
+export const cancelSale = async (invoiceNo: string) => {
   try {
-    let customerId = data.customerId || null;
+    const sale = await Sale.findOne({ invoiceNo });
 
-    if (!customerId && data.customer) {
-      const newCustomer = await Customer.create({
-        name: data.customer.name || "Walk-in Customer",
-        phone: data.customer.phone || "",
-      });
-      customerId = newCustomer._id;
+    if (!sale) {
+      throw new Error("Sale Not Found");
     }
 
-    // Validate Items
-    if (!data.items || data.items.length === 0) {
-      throw new Error("Sale Items Are Required");
+    if (sale.paymentStatus !== "pending") {
+      throw new Error(
+        `Cannot Cancel Sale With ${sale.paymentStatus} Payment Status`,
+      );
     }
 
-    // Generate Invoice
-    const invoiceNo = await generateInvoice("sale");
-
-    let subtotal = 0;
-
-    // Create Sale Header
-    const sale = await Sale.create({
-      invoiceNo,
-      customerId,
-      saleDate: new Date(),
-
-      subtotal: 0,
-      discount: data.discount || 0,
-      tax: data.tax || 0,
-      total: 0,
-
-      paymentStatus: data.paymentStatus || "pending",
-      note: data.note || "",
-      createdBy: data.createdBy,
-    });
-
-    const itemLines: { name: string; quantity: number; total: number }[] = [];
-
-    // Process Item
-    for (const item of data.items) {
-      const product = await Product.findById(item.productId);
-
-      if (!product) {
-        throw new Error(`Product Not Found: ${item.productId}`);
-      }
-
-      const quantity = Number(item.quantity);
-      const sellingPrice = Number(item.sellingPrice);
-
-      if (quantity <= 0) {
-        throw new Error("Quantity Must Be Greater Then 0");
-      }
-
-      // Check Stock
-      if (product.stockQty < quantity) {
-        throw new Error(
-          `Not Enought Stock For ${product.name}. Available Only ${product.stockQty}`,
-        );
-      }
-
-      const lineTotal = quantity * sellingPrice;
-      subtotal += lineTotal;
-
-      itemLines.push({
-        name: product.name,
-        quantity,
-        total: lineTotal,
-      });
-
-      // Craete Sale Item
-      await SaleItem.create({
-        saleId: sale._id,
-        productId: product._id,
-        quantity,
-        sellingPrice,
-        total: lineTotal,
-      });
-
-      product.stockQty -= quantity;
-      await product.save();
-    }
-
-    // Calculate Total
-    const discount = Number(data.discount || 0);
-    const tax = Number(data.tax || 0);
-
-    const total = subtotal - discount + tax;
-
-    sale.subtotal = subtotal;
-    sale.total = total;
-
+    sale.paymentStatus = "cancelled";
     await sale.save();
-
-    await sendTelegramMessage(
-      `🟢 <b>NEW SALE CREATED</b>
-    ━━━━━━━━━━━━━━━━━━━━━━━━
-
-    🧾 <b>Invoice:</b> ${sale.invoiceNo}
-    📅 <b>Date:</b> ${new Date().toLocaleString()}
-
-    📦 <b>Items:</b>
-    ${itemLines.map((item) => `  • ${item.name} x${item.quantity} — $${item.total.toFixed(2)}`).join("\n")}
-
-    ━━━━━━━━━━━━━━━━━━━━━━━━
-    💵 Subtotal:   $${subtotal.toFixed(2)}
-    📉 Discount:   $${discount.toFixed(2)}
-    🧾 Tax:        $${tax.toFixed(2)}
-    💰 <b>Total:     $${sale.total.toFixed(2)}</b>
-
-    💳 <b>Payment:</b> ${sale.paymentStatus === "paid" ? "✅ Paid" : sale.paymentStatus === "pending" ? "⏳ Pending" : "❌ Unpaid"}
-    ━━━━━━━━━━━━━━━━━━━━━━━━`,
-    );
 
     return sale;
   } catch (error: any) {

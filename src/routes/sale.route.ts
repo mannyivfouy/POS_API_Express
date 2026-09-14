@@ -8,20 +8,22 @@ const router = express.Router();
 router.post(
   "/prepare-payment",
   authMiddleware,
+  authorize("sale.create"),
   saleController.preparedSalePayment,
 );
 
 router.post(
   "/complete",
   authMiddleware,
+  authorize("sale.create"),
   saleController.completeSale,
 );
 
 router.post(
-  "/create",
+  "/cancel",
   authMiddleware,
   authorize("sale.create"),
-  saleController.createSale,
+  saleController.cancelSale,
 );
 
 router.get(
